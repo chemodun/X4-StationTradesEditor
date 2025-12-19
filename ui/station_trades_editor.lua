@@ -638,22 +638,32 @@ local function applyClone(menu, leftToRight)
   end
 end
 
-local function renderOffer(row, offerData, isBuy)
-  local idx = 2
-  row[idx]:createText("  " .. (isBuy and texts.buyOffer or texts.sellOffer) .. ":", textCategoryProperties)
+local function renderOffer(tableContent, data, ware, wareInfo, offerType, readyToSelectWares, render)
+  local row = tableContent:addRow(true)
+  local offerData = wareInfo[offerType]
+  local isBuy = (offerType == "buy")
+  row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == offerType, { active = readyToSelectWares or data.edit.selectedWares[ware.ware] == offerType })
+  row[1].handlers.onClick = function(_, checked)
+    data.edit.selectedWares[ware.ware] = checked and offerType or nil
+    debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer edit to " .. tostring(checked))
+    data.edit.confirmed = false
+    data.statusMessage = nil
+    render()
+  end
+  row[2]:createText("  " .. (isBuy and texts.buyOffer or texts.sellOffer) .. ":", textCategoryProperties)
   if (offerData == nil) or (not offerData.allowed) or (row == nil) then
-    row[idx + 1]:setColSpan(9):createText(isBuy and texts.noBuyOffer or texts.noSellOffer, { halign = "center" })
+    row[3]:setColSpan(9):createText(isBuy and texts.noBuyOffer or texts.noSellOffer, { halign = "center" })
     return
   end
-  row[idx + 1]:createText(texts.price .. ":")
-  row[idx + 2]:createText(overrideIcons[offerData.priceOverride], overrideIconsTextProperties[offerData.priceOverride])
-  row[idx + 3]:createText(formatPrice(offerData.price, offerData.priceOverride), optionsNumber(offerData.priceOverride))
-  row[idx + 4]:createText(texts.amount .. ":")
-  row[idx + 5]:createText(overrideIcons[offerData.limitOverride], overrideIconsTextProperties[offerData.limitOverride])
-  row[idx + 6]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, offerData.limitOverride), optionsNumber(offerData.limitOverride))
-  row[idx + 7]:createText(texts.rule .. ":")
-  row[idx + 8]:createText(overrideIcons[offerData.ruleOverride], overrideIconsTextProperties[offerData.ruleOverride])
-  row[idx + 9]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
+  row[3]:createText(texts.price .. ":")
+  row[4]:createText(overrideIcons[offerData.priceOverride], overrideIconsTextProperties[offerData.priceOverride])
+  row[5]:createText(formatPrice(offerData.price, offerData.priceOverride), optionsNumber(offerData.priceOverride))
+  row[6]:createText(texts.amount .. ":")
+  row[7]:createText(overrideIcons[offerData.limitOverride], overrideIconsTextProperties[offerData.limitOverride])
+  row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, offerData.limitOverride), optionsNumber(offerData.limitOverride))
+  row[9]:createText(texts.rule .. ":")
+  row[10]:createText(overrideIcons[offerData.ruleOverride], overrideIconsTextProperties[offerData.ruleOverride])
+  row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
 end
 
 local function countCloneSelections(data)
@@ -793,7 +803,7 @@ local function render()
     debugTrace("Station: " .. tostring(stationEntry.displayName) .. " (" .. tostring(stationEntry.id64) .. ")")
     local stationData = collectTradeData(stationEntry)
     local wareList = getWareList(stationData)
-    local readyToSelectWares = stationEntry ~= nil and #wareList > 0
+    local readyToSelectWares = stationEntry ~= nil and #wareList > 0 and next(data.edit.selectedWares) == nil
     debugTrace("Processing " .. tostring(#wareList) .. " wares for comparison")
     local wareType = nil
     if #wareList == 0 then
@@ -823,37 +833,38 @@ local function render()
           if wareType ~= wareInfo.type then
             wareType = wareInfo.type
             local typeRow = tableContent:addRow(true, { bgColor = Color["row_background_unselectable"] })
-            if data.clone.types[wareType] == nil then
-              data.clone.types[wareType] = false
-            end
             if not activeContent then
               activeContent = true
             end
             if (wareType == "trade") then
-              typeRow[1]:createCheckBox(data.clone.types[wareType], { active = readyToSelectWares })
+              typeRow[1]:createCheckBox(data.edit.selectedType == wareType, { active = readyToSelectWares or data.edit.selectedType == wareType})
               local wType = wareType
               typeRow[1].handlers.onClick = function(_, checked)
-                data.clone.types[wType] = checked
-                debugTrace("Set clone for ware type " .. tostring(wType) .. " to " .. tostring(checked))
-                if (i > 1) then
-                  for j = i - 1, 1, -1 do
+                data.edit.selectedType = checked and wareType or nil
+                debugTrace("Set to delete all wares by type " .. tostring(wType) .. " to " .. tostring(checked))
+                if checked == false then
+                  data.edit.selectedWares = {}
+                else
+                  if (i > 1) then
+                    for j = i - 1, 1, -1 do
+                      local w = wareList[j]
+                      local info = w.ware and stationData.waresMap[w.ware]
+                      if info == nil or info.type ~= wType then
+                        break
+                      end
+                      data.edit.selectedWares[w.ware] = "ware"
+                    end
+                  end
+                  for j = i, #wareList do
                     local w = wareList[j]
                     local info = w.ware and stationData.waresMap[w.ware]
                     if info == nil or info.type ~= wType then
                       break
                     end
-                    data.clone.wares[w.ware] = { storage = checked, buy = checked, sell = checked }
+                    data.edit.selectedWares[w.ware] = "ware"
                   end
                 end
-                for j = i, #wareList do
-                  local w = wareList[j]
-                  local info = w.ware and stationData.waresMap[w.ware]
-                  if info == nil or info.type ~= wType then
-                    break
-                  end
-                  data.clone.wares[w.ware] = { storage = checked, buy = checked, sell = checked }
-                end
-                data.clone.confirmed = false
+                data.edit.confirmed = false
                 data.statusMessage = nil
                 render()
               end
@@ -866,10 +877,11 @@ local function render()
             tableContent:addEmptyRow(Helper.standardTextHeight / 2)
           end
           local row = tableContent:addRow(true)
-          row[1]:createCheckBox(false, { active = readyToSelectWares, })
+          row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == "ware", { active = readyToSelectWares or data.edit.selectedType == wareType or data.edit.selectedWares[ware.ware] == "ware", })
           row[1].handlers.onClick = function(_, checked)
             debugTrace("Set ware " .. tostring(ware.ware) .. " edit to " .. tostring(checked))
-            data.clone.confirmed = false
+            data.edit.selectedWares[ware.ware] = checked and "ware" or nil
+            data.edit.confirmed = false
             data.statusMessage = nil
             render()
           end
@@ -881,36 +893,9 @@ local function render()
           row[10]:createText(overrideIcons[wareInfo.storageLimitOverride], overrideIconsTextProperties[wareInfo.storageLimitOverride])
           row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
             optionsNumber(wareInfo.storageLimitOverride))
-          local row = tableContent:addRow(true)
-          row[1]:createCheckBox(false, { active = readyToSelectWares })
-          row[1].handlers.onClick = function(_, checked)
-            data.clone.wares[ware.ware].buy = checked
-            debugTrace("Set clone for ware " .. tostring(ware.ware) .. " buy offer to " .. tostring(checked))
-            if checked == false then
-              if wareInfo and wareInfo.type then
-                data.clone.types[wareInfo.type] = false
-              end
-            end
-            data.clone.confirmed = false
-            data.statusMessage = nil
-            render()
-          end
-          renderOffer(row, wareInfo.buy, true)
-          local row = tableContent:addRow(true, { borderBelow = true })
-          row[1]:createCheckBox(false, { active = readyToSelectWares })
-          row[1].handlers.onClick = function(_, checked)
-            data.clone.wares[ware.ware].sell = checked
-            debugTrace("Set clone for ware " .. tostring(ware.ware) .. " sell offer to " .. tostring(checked))
-            if checked == false then
-              if wareInfo and wareInfo.type then
-                data.clone.types[wareInfo.type] = false
-              end
-            end
-            data.clone.confirmed = false
-            data.statusMessage = nil
-            render()
-          end
-          renderOffer(row, wareInfo.sell, false)
+
+          renderOffer(tableContent, data, ware, wareInfo, "buy", readyToSelectWares, render)
+          renderOffer(tableContent, data, ware, wareInfo, "sell", readyToSelectWares, render)
         end
         tableContent:addEmptyRow(Helper.standardTextHeight / 2)
       end
@@ -1006,9 +991,9 @@ local function render()
   tableConfirm:addEmptyRow(Helper.standardTextHeight / 2)
   row = tableConfirm:addRow(true, { fixed = true })
 
-  row[4]:createCheckBox(data.clone.confirmed, { active = selectedCount > 0 })
+  row[4]:createCheckBox(data.edit.confirmed, { active = next(data.edit.selectedWares) ~= nil })
   row[4].handlers.onClick = function(_, checked)
-    data.clone.confirmed = checked
+    data.edit.confirmed = checked
     debugTrace("Set edit confirmed to " .. tostring(checked))
     data.statusMessage = nil
     render()
@@ -1038,7 +1023,7 @@ local function render()
   --     render()
   --   end
   -- end
-  row[6]:createButton({ active = selectedCount > 0 and data.clone.confirmed }):setText(texts.saveButton,
+  row[6]:createButton({ active = next(data.edit.selectedWares) ~= nil and data.edit.confirmed }):setText(texts.saveButton,
     { halign = "center" })
   row[6].handlers.onClick = function()
     if selectedCount > 0 then
@@ -1123,6 +1108,11 @@ local function show()
     layer = menu.contextFrameLayer or 2,
     contentHeight = math.floor(Helper.viewHeight * 0.6),
     waresOnScreenMax = 30,
+    edit = {
+      selectedWares = {},
+      selectedType = nil,
+      confirmed = false,
+    },
   }
 
   data.stations, data.stationOptions = buildStationCache()

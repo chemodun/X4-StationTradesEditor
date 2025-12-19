@@ -27,6 +27,7 @@ ffi.cdef [[
   void SetContainerSellLimitOverride(UniverseID containerid, const char* wareid, int32_t amount);
 
   void SetContainerTradeRule(UniverseID containerid, TradeRuleID id, const char* ruletype, const char* wareid, bool value);
+  bool IsPlayerTradeRuleDefault(TradeRuleID id, const char* ruletype);
 
   void SetContainerWareIsBuyable(UniverseID containerid, const char* wareid, bool allowed);
   void SetContainerWareIsSellable(UniverseID containerid, const char* wareid, bool allowed);
@@ -93,6 +94,7 @@ local wareTypeSortOrder = {
   trade = 4
 }
 
+local tradeRuleNames = nil
 
 local function copyAndEnrichTable(src, extraInfo)
   local dest = {}
@@ -382,6 +384,24 @@ local function formatTradeRuleLabel(id, hasOwn, root)
   return label
 end
 
+local function tradeRulesDropdownOptions(isBuy, tradeData)
+  ensureTradeRuleNames()
+  local options = {}
+  if tradeRuleNames and #tradeRuleNames > 0 then
+    for ruleId, ruleName in pairs(tradeRuleNames) do
+      local displayName = ruleName
+      local area = ""
+      if isBuy and ruleId == tradeData.rules.buy or not isBuy and ruleId == tradeData.rules.sell then
+        area = tradeRulesRoots[(isBuy and tradeData.rulesOverride.buy or tradeData.rulesOverride.sell) and "station" or "global"]
+      elseif C.IsPlayerTradeRuleDefault(ruleId, "buy") and C.IsPlayerTradeRuleDefault(ruleId, "sell") then
+        area = tradeRulesRoots["global"]
+      end
+      options[#options + 1] = { id = ruleId, icon = "", text = displayName, text2 = area, displayremoveoption = false }
+    end
+  end
+  return options
+end
+
 local function formatNumber(value, override)
   if not override then
     return texts.auto
@@ -646,8 +666,9 @@ local function calculateOverride(overrideFromEdit, currentOverride)
   return overrideFromEdit
 end
 
-local function renderOffer(tableContent, data, ware, wareInfo, offerType, readyToSelectWares, render)
+local function renderOffer(tableContent, data, tradeData, ware, offerType, readyToSelectWares, render)
   local row = tableContent:addRow(true)
+  local wareInfo = tradeData.waresMap[ware.ware]
   local offerData = wareInfo[offerType]
   local isBuy = (offerType == "buy")
   local editOffer = data.edit.selectedWares[ware.ware] == offerType
@@ -672,7 +693,7 @@ local function renderOffer(tableContent, data, ware, wareInfo, offerType, readyT
     row[4].handlers.onClick = function(_, checked)
       if isBuy then
         data.edit.changed.priceOverrideBuy = not checked
-        else
+      else
         data.edit.changed.priceOverrideSell = not checked
       end
       data.edit.confirmed = false
@@ -739,6 +760,32 @@ local function renderOffer(tableContent, data, ware, wareInfo, offerType, readyT
     row[10]:createText(overrideIcons[offerData.ruleOverride], overrideIconsTextProperties[offerData.ruleOverride])
   end
   if ruleEdit then
+    local tradeRuleOptions = tradeRulesDropdownOptions(isBuy, tradeData)
+    local startOption = isBuy and (data.edit.changed.ruleBuyRuleId or offerData.rule) or (data.edit.changed.ruleSellRuleId or offerData.rule)
+    debugTrace("Rendering trade rule DropDown with " .. tostring(#tradeRuleOptions) .. " options for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+
+    row[11]:createDropDown(
+      tradeRuleOptions,
+      {
+        startOption = startOption or -1,
+        active = true,
+        textOverride = (#tradeRuleOptions == 0) and "No trade rules" or nil,
+      }
+    )
+    row[11]:setTextProperties({ halign = "left" })
+    row[11]:setText2Properties({ halign = "right", color = Color["text_positive"] })
+    row[11].handlers.onDropDownConfirmed = function(_, id)
+      if isBuy then
+        data.edit.changed.ruleBuyRuleId = tonumber(id)
+      else
+        data.edit.changed.ruleSellRuleId = tonumber(id)
+      end
+      data.edit.confirmed = false
+      debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer rule edit to " .. tostring(id))
+      data.statusMessage = nil
+      render()
+    end
+
   else
     row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
   end
@@ -990,8 +1037,8 @@ local function render()
             row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
               optionsNumber(wareInfo.storageLimitOverride))
           end
-          renderOffer(tableContent, data, ware, wareInfo, "buy", readyToSelectWares, render)
-          renderOffer(tableContent, data, ware, wareInfo, "sell", readyToSelectWares, render)
+          renderOffer(tableContent, data, stationEntry.tradeData, ware, "buy", readyToSelectWares, render)
+          renderOffer(tableContent, data, stationEntry.tradeData, ware, "sell", readyToSelectWares, render)
         end
         tableContent:addEmptyRow(Helper.standardTextHeight / 2)
       end

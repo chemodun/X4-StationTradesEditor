@@ -725,6 +725,13 @@ local function setMainTableColumnsWidth(tableHandle)
   return width
 end
 
+local function calculateOverride(overrideFromEdit, currentOverride)
+  if overrideFromEdit == nil then
+    return currentOverride
+  end
+  return overrideFromEdit
+end
+
 local function render()
   if type(menu) ~= "table" or type(Helper) ~= "table" then
     debugTrace("TradesEditor: Render: Invalid menu instance or Helper UI utilities are not available")
@@ -890,7 +897,18 @@ local function render()
           row[6]:setColSpan(2):createText(texts.amount .. ":")
           row[8]:createText(formatNumber(wareInfo.amount, true), cargoAmountTextProperties)
           row[9]:createText(texts.storage .. ":")
-          row[10]:createText(overrideIcons[wareInfo.storageLimitOverride], overrideIconsTextProperties[wareInfo.storageLimitOverride])
+          if data.edit.selectedType ~= wareType and data.edit.selectedWares[ware.ware] == "ware" then
+            row[10]:createCheckBox(not calculateOverride(data.edit.changed.storageLimitOverride, wareInfo.storageLimitOverride), { active = true })
+            row[10].handlers.onClick = function(_, checked)
+              data.edit.changed.storageLimitOverride = not checked
+              debugTrace("Set ware " .. tostring(ware.ware) .. " storage limit override new value to " .. tostring(not checked))
+              data.edit.confirmed = false
+              data.statusMessage = nil
+              render()
+            end
+          else
+            row[10]:createText(overrideIcons[wareInfo.storageLimitOverride], overrideIconsTextProperties[wareInfo.storageLimitOverride])
+          end
           row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
             optionsNumber(wareInfo.storageLimitOverride))
 
@@ -1111,6 +1129,7 @@ local function show()
     edit = {
       selectedWares = {},
       selectedType = nil,
+      changed = {},
       confirmed = false,
     },
   }

@@ -70,6 +70,7 @@ local texts = {
   confirmSave = ReadText(1972092410, 1401),
   saveButton = ReadText(1972092410, 1411),
   cancelButton = ReadText(1972092410, 1419),
+  acceptButton = "Accept",
   statusNoStationSelected = ReadText(1972092410, 2001),
   statusNoWaresAvailable = ReadText(1972092410, 2002),
   statusSavedWithWarnings = ReadText(1972092410, 2012),
@@ -678,6 +679,10 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == offerType, { active = readyToSelectWares or data.edit.selectedWares[ware.ware] == offerType })
   row[1].handlers.onClick = function(_, checked)
     data.edit.selectedWares[ware.ware] = checked and offerType or nil
+    if not checked then
+      data.edit.slider = nil
+      data.edit.changed = {}
+    end
     debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer edit to " .. tostring(checked))
     data.edit.confirmed = false
     data.statusMessage = nil
@@ -699,6 +704,9 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       else
         data.edit.changed.priceOverrideSell = not checked
       end
+      if checked then
+        data.edit.slider = nil
+      end
       data.edit.confirmed = false
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer price override edit to " .. tostring(checked))
       data.statusMessage = nil
@@ -712,10 +720,10 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   end
   if priceEdit then
     local currentPrice = (isBuy and data.edit.changed.priceBuy or data.edit.changed.priceSell) or offerData.price
-    row[5]:createButton({ active = true }):setText(data.edit.slider == "price" and texts.saveButton or formatPrice(currentPrice, true), { halign = "center" })
+    row[5]:createButton({ active = true }):setText(data.edit.slider and data.edit.slider.param == "price" and texts.acceptButton or formatPrice(currentPrice, true), { halign = "center" })
     row[5].handlers.onClick = function()
-      if data.edit.slider ~= "price" then
-        data.edit.slider = "price"
+      if not data.edit.slider or data.edit.slider.param ~= "price" then
+        data.edit.slider = { param = "price", ware = ware.ware, offerType = offerType }
         debugTrace("Activating price slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
       else
         data.edit.slider = nil
@@ -739,6 +747,9 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       else
         data.edit.changed.limitOverrideSell = not checked
       end
+      if checked then
+        data.edit.slider = nil
+      end
       data.edit.confirmed = false
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer limit override edit to " .. tostring(checked))
       data.statusMessage = nil
@@ -751,6 +762,22 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     row[7]:createText(overrideIcons[offerData.limitOverride], overrideIconsTextProperties[offerData.limitOverride])
   end
   if limitEdit then
+    local currentLimit = (isBuy and data.edit.changed.limitBuy or data.edit.changed.limitSell) or offerData.limit
+    local currentLimitPercentage = wareInfo.storageLimit > 0 and 100.00 * currentLimit / wareInfo.storageLimit or 100.00
+    local formattedLimit = formatNumberWithPercentage(currentLimit, currentLimitPercentage, true)
+    row[8]:createButton({ active = true }):setText(data.edit.slider and data.edit.slider.param == "limit" and texts.acceptButton or formattedLimit, { halign = "center" })
+    row[8].handlers.onClick = function()
+      if not data.edit.slider or data.edit.slider.param ~= "limit" then
+        data.edit.slider = { param = "limit", ware = ware.ware, offerType = offerType }
+        debugTrace("Activating limit slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+      else
+        data.edit.slider = nil
+        debugTrace("Deactivating limit slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+      end
+      data.edit.confirmed = false
+      data.statusMessage = nil
+      render()
+    end
   else
     row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, offerData.limitOverride), optionsNumber(offerData.limitOverride))
   end
@@ -805,9 +832,9 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   else
     row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
   end
-  if data.edit.slider ~= nil then
+  if data.edit.slider ~= nil and data.edit.slider.ware == ware.ware and data.edit.slider.offerType == offerType then
     local row = tableContent:addRow(true)
-    if data.edit.slider == "price" then
+    if data.edit.slider.param == "price" then
       local currentPrice = (isBuy and data.edit.changed.priceBuy or data.edit.changed.priceSell) or offerData.price
       currentPrice = math.max(wareInfo.minPrice, math.min(wareInfo.maxPrice, currentPrice))
       row[2]:setColSpan(10):createSliderCell(
@@ -819,7 +846,8 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
           start = currentPrice,
           suffix = texts.priceSuffix,
           readOnly = false,
-          hideMaxValue = true
+          hideMaxValue = true,
+          forceArrows = true,
         }):setText(texts.price, { halign = "left", width = Helper.scaleX(120) })
       row[2].handlers.onSliderCellChanged = function(_, value)
         if isBuy then
@@ -832,8 +860,35 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
         data.statusMessage = nil
         render()
       end
-      -- row[1].handlers.onSliderCellActivated = function() menu.noupdate = true end
-      -- row[1].handlers.onSliderCellDeactivated = function() menu.noupdate = false end
+      -- row[2].handlers.onSliderCellActivated = function() menu.noupdate = true end
+      -- row[2].handlers.onSliderCellDeactivated = function() menu.noupdate = false end
+    elseif data.edit.slider.param == "limit" then
+      local currentLimit = (isBuy and data.edit.changed.limitBuy or data.edit.changed.limitSell) or offerData.limit
+      local max = wareInfo.storageLimit
+      currentLimit = math.max(1, math.min(max, currentLimit))
+      row[2]:setColSpan(10):createSliderCell(
+        {
+          height = Helper.standardTextHeight,
+          valueColor = Color["slider_value"],
+          min = 0,
+          minSelect = max == 0 and 0 or 1,
+          max = max,
+          start = math.min(max, currentLimit),
+          readOnly = false,
+          hideMaxValue = true,
+          forceArrows = true,
+        }):setText(texts.amount, { halign = "left", width = Helper.scaleX(120) })
+      row[2].handlers.onSliderCellChanged = function(_, value)
+        if isBuy then
+          data.edit.changed.limitBuy = value
+        else
+          data.edit.changed.limitSell = value
+        end
+        data.edit.confirmed = false
+        debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer limit edit to " .. tostring(value))
+        data.statusMessage = nil
+        render()
+      end
     end
   end
 end
@@ -1056,6 +1111,10 @@ local function render()
             data.edit.selectedWares[ware.ware] = checked and "ware" or nil
             data.edit.confirmed = false
             data.statusMessage = nil
+            if not checked then
+              data.edit.slider = nil
+              data.edit.changed = {}
+            end
             render()
           end
           row[2]:createText(texts.ware .. ":", textCategoryProperties)

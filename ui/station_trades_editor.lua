@@ -638,10 +638,19 @@ local function applyClone(menu, leftToRight)
   end
 end
 
+
+local function calculateOverride(overrideFromEdit, currentOverride)
+  if overrideFromEdit == nil then
+    return currentOverride
+  end
+  return overrideFromEdit
+end
+
 local function renderOffer(tableContent, data, ware, wareInfo, offerType, readyToSelectWares, render)
   local row = tableContent:addRow(true)
   local offerData = wareInfo[offerType]
   local isBuy = (offerType == "buy")
+  local editOffer = data.edit.selectedWares[ware.ware] == offerType
   row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == offerType, { active = readyToSelectWares or data.edit.selectedWares[ware.ware] == offerType })
   row[1].handlers.onClick = function(_, checked)
     data.edit.selectedWares[ware.ware] = checked and offerType or nil
@@ -651,19 +660,88 @@ local function renderOffer(tableContent, data, ware, wareInfo, offerType, readyT
     render()
   end
   row[2]:createText("  " .. (isBuy and texts.buyOffer or texts.sellOffer) .. ":", textCategoryProperties)
-  if (offerData == nil) or (not offerData.allowed) or (row == nil) then
+  if ((offerData == nil) or (not offerData.allowed)) and not editOffer then
     row[3]:setColSpan(9):createText(isBuy and texts.noBuyOffer or texts.noSellOffer, { halign = "center" })
     return
   end
   row[3]:createText(texts.price .. ":")
-  row[4]:createText(overrideIcons[offerData.priceOverride], overrideIconsTextProperties[offerData.priceOverride])
-  row[5]:createText(formatPrice(offerData.price, offerData.priceOverride), optionsNumber(offerData.priceOverride))
+  local priceEdit = false
+  if editOffer then
+    local priceOverride = calculateOverride(isBuy and data.edit.changed.priceOverrideBuy or data.edit.changed.priceOverrideSell, offerData.priceOverride) or false
+    row[4]:createCheckBox(not priceOverride, { active = true })
+    row[4].handlers.onClick = function(_, checked)
+      if isBuy then
+        data.edit.changed.priceOverrideBuy = not checked
+        else
+        data.edit.changed.priceOverrideSell = not checked
+      end
+      data.edit.confirmed = false
+      debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer price override edit to " .. tostring(checked))
+      data.statusMessage = nil
+      render()
+    end
+    if isBuy and data.edit.changed.priceOverrideBuy or not isBuy and data.edit.changed.priceOverrideSell then
+      priceEdit = true
+    end
+  else
+    row[4]:createText(overrideIcons[offerData.priceOverride], overrideIconsTextProperties[offerData.priceOverride])
+  end
+  if priceEdit then
+  else
+    row[5]:createText(formatPrice(offerData.price, offerData.priceOverride), optionsNumber(offerData.priceOverride))
+  end
   row[6]:createText(texts.amount .. ":")
-  row[7]:createText(overrideIcons[offerData.limitOverride], overrideIconsTextProperties[offerData.limitOverride])
-  row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, offerData.limitOverride), optionsNumber(offerData.limitOverride))
+  local limitEdit = false
+  if editOffer then
+    local limitOverride = calculateOverride(isBuy and data.edit.changed.limitOverrideBuy or data.edit.changed.limitOverrideSell, offerData.limitOverride) or false
+    row[7]:createCheckBox(not limitOverride, { active = true })
+    row[7].handlers.onClick = function(_, checked)
+      if isBuy then
+        data.edit.changed.limitOverrideBuy = not checked
+      else
+        data.edit.changed.limitOverrideSell = not checked
+      end
+      data.edit.confirmed = false
+      debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer limit override edit to " .. tostring(checked))
+      data.statusMessage = nil
+      render()
+    end
+    if isBuy and data.edit.changed.limitOverrideBuy or not isBuy and data.edit.changed.limitOverrideSell then
+      limitEdit = true
+    end
+  else
+    row[7]:createText(overrideIcons[offerData.limitOverride], overrideIconsTextProperties[offerData.limitOverride])
+  end
+  if limitEdit then
+  else
+    row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, offerData.limitOverride), optionsNumber(offerData.limitOverride))
+  end
   row[9]:createText(texts.rule .. ":")
-  row[10]:createText(overrideIcons[offerData.ruleOverride], overrideIconsTextProperties[offerData.ruleOverride])
-  row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
+  local ruleEdit = false
+  if editOffer then
+    local ruleOverride = calculateOverride(isBuy and data.edit.changed.ruleOverrideBuy or data.edit.changed.ruleOverrideSell, offerData.ruleOverride) or false
+    row[10]:createCheckBox(not ruleOverride, { active = true })
+    row[10].handlers.onClick = function(_, checked)
+      if isBuy then
+        data.edit.changed.ruleOverrideBuy = not checked
+      else
+        data.edit.changed.ruleOverrideSell = not checked
+      end
+      data.edit.confirmed = false
+      debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer rule override edit to " .. tostring(checked))
+      data.statusMessage = nil
+      render()
+    end
+    if isBuy and data.edit.changed.ruleOverrideBuy or not isBuy and data.edit.changed.ruleOverrideSell then
+      ruleEdit = true
+    end
+  else
+    row[10]:createText(overrideIcons[offerData.ruleOverride], overrideIconsTextProperties[offerData.ruleOverride])
+  end
+  if ruleEdit then
+  else
+    row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
+  end
 end
 
 local function countCloneSelections(data)
@@ -725,13 +803,6 @@ local function setMainTableColumnsWidth(tableHandle)
   return width
 end
 
-local function calculateOverride(overrideFromEdit, currentOverride)
-  if overrideFromEdit == nil then
-    return currentOverride
-  end
-  return overrideFromEdit
-end
-
 local function render()
   if type(menu) ~= "table" or type(Helper) ~= "table" then
     debugTrace("TradesEditor: Render: Invalid menu instance or Helper UI utilities are not available")
@@ -773,7 +844,7 @@ local function render()
 
 
   row = tableTop:addRow(true, { fixed = true })
-  row[2]:setColSpan(3):createText(texts.station, Helper.headerRowCenteredProperties)
+  row[1]:setColSpan(4):createText(texts.station, Helper.headerRowCenteredProperties)
   debugTrace("Rendering station DropDown with " .. tostring(#data.stationOptions) .. " options, selected: " .. tostring(data.selectedStation))
   row[5]:setColSpan(7):createDropDown(data.stationOptions, {
     startOption = data.selectedStation or -1,
@@ -897,8 +968,10 @@ local function render()
           row[6]:setColSpan(2):createText(texts.amount .. ":")
           row[8]:createText(formatNumber(wareInfo.amount, true), cargoAmountTextProperties)
           row[9]:createText(texts.storage .. ":")
-          if data.edit.selectedType ~= wareType and data.edit.selectedWares[ware.ware] == "ware" then
-            row[10]:createCheckBox(not calculateOverride(data.edit.changed.storageLimitOverride, wareInfo.storageLimitOverride), { active = true })
+          local storageLimitEdit = false
+          if data.edit.selectedType == nil and data.edit.selectedWares[ware.ware] == "ware" then
+            local storageLimitOverride = calculateOverride(data.edit.changed.storageLimitOverride, wareInfo.storageLimitOverride)
+            row[10]:createCheckBox(not storageLimitOverride, { active = true })
             row[10].handlers.onClick = function(_, checked)
               data.edit.changed.storageLimitOverride = not checked
               debugTrace("Set ware " .. tostring(ware.ware) .. " storage limit override new value to " .. tostring(not checked))
@@ -906,12 +979,17 @@ local function render()
               data.statusMessage = nil
               render()
             end
+            if storageLimitOverride then
+              storageLimitEdit = true
+            end
           else
             row[10]:createText(overrideIcons[wareInfo.storageLimitOverride], overrideIconsTextProperties[wareInfo.storageLimitOverride])
           end
-          row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
-            optionsNumber(wareInfo.storageLimitOverride))
-
+          if storageLimitEdit then
+          else
+            row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
+              optionsNumber(wareInfo.storageLimitOverride))
+          end
           renderOffer(tableContent, data, ware, wareInfo, "buy", readyToSelectWares, render)
           renderOffer(tableContent, data, ware, wareInfo, "sell", readyToSelectWares, render)
         end

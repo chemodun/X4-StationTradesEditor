@@ -712,7 +712,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       data.statusMessage = nil
       render()
     end
-    if isBuy and data.edit.changed.priceOverrideBuy or not isBuy and data.edit.changed.priceOverrideSell then
+    if priceOverride then
       priceEdit = true
     end
   else
@@ -755,7 +755,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       data.statusMessage = nil
       render()
     end
-    if isBuy and data.edit.changed.limitOverrideBuy or not isBuy and data.edit.changed.limitOverrideSell then
+    if limitOverride then
       limitEdit = true
     end
   else
@@ -797,7 +797,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       data.statusMessage = nil
       render()
     end
-    if isBuy and data.edit.changed.ruleOverrideBuy or not isBuy and data.edit.changed.ruleOverrideSell then
+    if ruleOverride then
       ruleEdit = true
     end
   else
@@ -1140,6 +1140,23 @@ local function render()
             row[10]:createText(overrideIcons[wareInfo.storageLimitOverride], overrideIconsTextProperties[wareInfo.storageLimitOverride])
           end
           if storageLimitEdit then
+            local currentLimit = data.edit.changed.storageLimit or wareInfo.storageLimit
+            local cargoCapacity = stationEntry.cargoCapacities[wareInfo.transport] or 0
+            local currentLimitPercentage = cargoCapacity > 0 and 100.00 * currentLimit / cargoCapacity or 100.00
+            local formattedLimit = formatNumberWithPercentage(currentLimit, currentLimitPercentage, true)
+            row[11]:createButton({ active = true }):setText(data.edit.slider and data.edit.slider.param == "storageLimit" and texts.acceptButton or formattedLimit, { halign = "center" })
+            row[11].handlers.onClick = function()
+              if not data.edit.slider or data.edit.slider.param ~= "storageLimit" then
+                data.edit.slider = { param = "storageLimit", ware = ware.ware }
+                debugTrace("Activating storage limit slider for ware " .. tostring(ware.ware))
+              else
+                data.edit.slider = nil
+                debugTrace("Deactivating storage limit slider for ware " .. tostring(ware.ware))
+              end
+              data.edit.confirmed = false
+              data.statusMessage = nil
+              render()
+            end
           else
             row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
               optionsNumber(wareInfo.storageLimitOverride))

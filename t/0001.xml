@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Station Trades Editor" descr="Text for Station Trades Editor">
+      <t id="1">Station Trades Editor</t>
+      <t id="2">Station Trades Editor allows you to view and edit all trades in one place presented as a table.</t>
+      <t id="1001">Station Trades Editor</t>
+      <t id="1011">Station</t>
+      <t id="1101">Ware</t>
+      <t id="1102">Storage Allocation</t>
+      <t id="1103">Trade Rule</t>
+      <t id="1104">Price</t>
+      <t id="1105">Amount</t>
+      <t id="1111">Buy Offer / Sell Offer</t>
+      <t id="1121">Resources</t>
+      <t id="1122">Intermediates</t>
+      <t id="1123">Products</t>
+      <t id="1124">Trade Wares</t>
+      <t id="1201">Select Station to begin</t>
+      <t id="1203">No wares available for managing</t>
+      <t id="1211">Auto</t>
+      <t id="1212">No Buy Offer</t>
+      <t id="1213">No Sell Offer</t>
+      <t id="1301">Page %d of %d</t>
+      <t id="1401">Confirm before proceeding with saving</t>
+      <t id="1411">Save</t>
+      <t id="1419">Cancel</t>
+      <t id="2001">Select Station first!</t>
+      <t id="2011">Save operation completed successfully!\nProcessed wares: %d.</t>
+      <t id="2012">Save operation completed with warnings!\nProcessed wares: %d.\nSkipped wares: %s</t>
+      <t id="2101">Selected:\n Complete wares: %d.\n Separate attributes:\n - storage allocations: %d;\n - buy offers: %d;\n - sell offers: %d.</t>
+    </page>
+  </add>
+</diff>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mdscript name="Station_Trades_Editor_Interface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="md.xsd">
+  <cues>
+
+    <cue name="Main">
+      <conditions>
+        <event_cue_signalled cue="md.Setup.Start" />
+      </conditions>
+      <actions>
+        <set_value name="$DebugChance" exact="0" />
+      </actions>
+      <cues>
+
+        <cue name="Add_Menu_Item" instantiate="true">
+          <conditions>
+            <event_cue_signalled cue="md.Interact_Menu_API.Get_Actions" />
+          </conditions>
+          <actions>
+            <set_value name="$station" exact="event.param.$object" />
+            <do_if
+              value="$station.owner == faction.player and $station.isclass.{class.station} and $station.storagemodules.count gt 0">
+              <signal_cue_instantly
+                cue="md.Interact_Menu_API.Add_Action"
+                param="table[
+                  $id         = 'station_trades_editor_load',
+                  $section    = 'main',
+                  $text       = {1972092410, 1},
+                  $mouseover  = {1972092410, 2},
+                  $text2      = $station.knownname,
+                  $icon       = 'menu_shoppingcart',
+                  $active     = true,
+                  $callback   = Show_Interface,
+                ]" />
+            </do_if>
+          </actions>
+        </cue>
+
+        <cue name="Show_Interface" instantiate="true">
+          <conditions>
+            <event_cue_signalled />
+          </conditions>
+          <actions>
+            <set_value name="$station" exact="event.param.$object" />
+            <debug_text
+              text="'TradesEditor: Show\n Station: %s.\n event.param: %s.'.[@$station.debugname, @event.param]" chance="100" filter="scripts" />
+            <do_if
+              value="$station.owner == faction.player and $station.isclass.{class.station} and $station.storagemodules.count gt 0">
+              <do_if value="not player.entity.$StationTradesEditorSelected?">
+                <set_value name="player.entity.$StationTradesEditorSelected" exact="[]" />
+              </do_if>
+              <set_value name="$args" exact="table[$selectedStation = $station]" />
+              <append_to_list name="player.entity.$StationTradesEditorSelected" exact="$args" />
+              <debug_text
+                text="'TradesEditor: Request invoked with args: %s'.[$args]"
+                chance="100" filter="scripts" />
+              <raise_lua_event name="'StationTradesEditorShow'" />
+              <remove_value name="$args" />
+            </do_if>
+          </actions>
+
+        </cue>
+
+      </cues>
+    </cue>
+  </cues>
+</mdscript>

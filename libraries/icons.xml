@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<diff>
+  <add sel="/icons" if="not(/icons/icon[@name='menu_radio_button_on'])">
+    <icon name="menu_radio_button_on" texture="extensions\stations_tce\assets\textures\ui\menu\menu_radio_button_on.tga" height="64" width="64"></icon>
+  </add>
+  <add sel="/icons" if="not(/icons/icon[@name='menu_radio_button_off'])">
+    <icon name="menu_radio_button_off" texture="extensions\stations_tce\assets\textures\ui\menu\menu_radio_button_off.tga" height="64" width="64"></icon>
+  </add>
+</diff>

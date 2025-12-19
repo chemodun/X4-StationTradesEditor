@@ -51,6 +51,7 @@ local texts = {
   storage = ReadText(1972092410, 1102),
   rule = ReadText(1972092410, 1103),
   price = ReadText(1972092410, 1104),
+  priceSuffix = ReadText(1001, 101),
   amount = ReadText(1972092410, 1105),
   buyOfferSellOffer = ReadText(1972092410, 1111),
   selectStationOnePrompt = ReadText(1972092410, 1201),
@@ -292,7 +293,7 @@ local function collectTradeData(entry, forceRefresh)
   if #wares > 0 then
     for i = 1, #wares do
       local ware = wares[i]
-      local name, transport = GetWareData(ware, "name", "transport")
+      local name, transport, minPrice, maxPrice = GetWareData(ware, "name", "transport", "minprice", "maxprice")
       if transport and cargoCapacities[transport] == nil then
         cargoCapacities[transport] = getCargoCapacity(container, transport)
       end
@@ -324,6 +325,8 @@ local function collectTradeData(entry, forceRefresh)
         name = name,
         type = wareType,
         transport = transport,
+        minPrice = minPrice,
+        maxPrice = maxPrice,
         amount = entry.tradeData.waresAmounts[ware] or 0,
         storageLimit = storageLimit,
         storageLimitPercentage = storageLimitPercentage,
@@ -708,6 +711,20 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     row[4]:createText(overrideIcons[offerData.priceOverride], overrideIconsTextProperties[offerData.priceOverride])
   end
   if priceEdit then
+    local currentPrice = (isBuy and data.edit.changed.priceBuy or data.edit.changed.priceSell) or offerData.price
+    row[5]:createButton({ active = true }):setText(data.edit.slider == "price" and texts.saveButton or formatPrice(currentPrice, true), { halign = "center" })
+    row[5].handlers.onClick = function()
+      if data.edit.slider ~= "price" then
+        data.edit.slider = "price"
+        debugTrace("Activating price slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+      else
+        data.edit.slider = nil
+        debugTrace("Deactivating price slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+      end
+      data.edit.confirmed = false
+      data.statusMessage = nil
+      render()
+    end
   else
     row[5]:createText(formatPrice(offerData.price, offerData.priceOverride), optionsNumber(offerData.priceOverride))
   end
@@ -761,9 +778,9 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   end
   if ruleEdit then
     local tradeRuleOptions = tradeRulesDropdownOptions(isBuy, tradeData)
-    local startOption = isBuy and (data.edit.changed.ruleBuyRuleId or offerData.rule) or (data.edit.changed.ruleSellRuleId or offerData.rule)
-    debugTrace("Rendering trade rule DropDown with " .. tostring(#tradeRuleOptions) .. " options for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
-
+    local startOption = isBuy and (data.edit.changed.ruleBuy or offerData.rule) or (data.edit.changed.ruleSell or offerData.rule)
+    debugTrace("Rendering trade rule DropDown with " ..
+      tostring(#tradeRuleOptions) .. " options for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
     row[11]:createDropDown(
       tradeRuleOptions,
       {
@@ -776,18 +793,48 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     row[11]:setText2Properties({ halign = "right", color = Color["text_positive"] })
     row[11].handlers.onDropDownConfirmed = function(_, id)
       if isBuy then
-        data.edit.changed.ruleBuyRuleId = tonumber(id)
+        data.edit.changed.ruleBuy = tonumber(id)
       else
-        data.edit.changed.ruleSellRuleId = tonumber(id)
+        data.edit.changed.ruleSell = tonumber(id)
       end
       data.edit.confirmed = false
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer rule edit to " .. tostring(id))
       data.statusMessage = nil
       render()
     end
-
   else
     row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
+  end
+  if data.edit.slider ~= nil then
+    local row = tableContent:addRow(true)
+    if data.edit.slider == "price" then
+      local currentPrice = (isBuy and data.edit.changed.priceBuy or data.edit.changed.priceSell) or offerData.price
+      currentPrice = math.max(wareInfo.minPrice, math.min(wareInfo.maxPrice, currentPrice))
+      row[2]:setColSpan(10):createSliderCell(
+        {
+          height = Helper.standardTextHeight,
+          valueColor = Color["slider_value"],
+          min = wareInfo.minPrice,
+          max = wareInfo.maxPrice,
+          start = currentPrice,
+          suffix = texts.priceSuffix,
+          readOnly = false,
+          hideMaxValue = true
+        }):setText(texts.price, { halign = "left", width = Helper.scaleX(120) })
+      row[2].handlers.onSliderCellChanged = function(_, value)
+        if isBuy then
+          data.edit.changed.priceBuy = value
+        else
+          data.edit.changed.priceSell = value
+        end
+        data.edit.confirmed = false
+        debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer price edit to " .. tostring(value))
+        data.statusMessage = nil
+        render()
+      end
+      -- row[1].handlers.onSliderCellActivated = function() menu.noupdate = true end
+      -- row[1].handlers.onSliderCellDeactivated = function() menu.noupdate = false end
+    end
   end
 end
 
@@ -962,7 +1009,7 @@ local function render()
               activeContent = true
             end
             if (wareType == "trade") then
-              typeRow[1]:createCheckBox(data.edit.selectedType == wareType, { active = readyToSelectWares or data.edit.selectedType == wareType})
+              typeRow[1]:createCheckBox(data.edit.selectedType == wareType, { active = readyToSelectWares or data.edit.selectedType == wareType })
               local wType = wareType
               typeRow[1].handlers.onClick = function(_, checked)
                 data.edit.selectedType = checked and wareType or nil
@@ -1002,7 +1049,8 @@ local function render()
             tableContent:addEmptyRow(Helper.standardTextHeight / 2)
           end
           local row = tableContent:addRow(true)
-          row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == "ware", { active = readyToSelectWares or data.edit.selectedType == wareType or data.edit.selectedWares[ware.ware] == "ware", })
+          row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == "ware",
+            { active = readyToSelectWares or data.edit.selectedType == wareType or data.edit.selectedWares[ware.ware] == "ware", })
           row[1].handlers.onClick = function(_, checked)
             debugTrace("Set ware " .. tostring(ware.ware) .. " edit to " .. tostring(checked))
             data.edit.selectedWares[ware.ware] = checked and "ware" or nil
@@ -1255,6 +1303,7 @@ local function show()
       selectedWares = {},
       selectedType = nil,
       changed = {},
+      slider = nil,
       confirmed = false,
     },
   }

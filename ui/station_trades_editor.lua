@@ -723,7 +723,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     row[5]:createButton({ active = true }):setText(data.edit.slider and data.edit.slider.param == "price" and texts.acceptButton or formatPrice(currentPrice, true), { halign = "center" })
     row[5].handlers.onClick = function()
       if not data.edit.slider or data.edit.slider.param ~= "price" then
-        data.edit.slider = { param = "price", ware = ware.ware, offerType = offerType }
+        data.edit.slider = { param = "price", ware = ware.ware, part = offerType }
         debugTrace("Activating price slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
       else
         data.edit.slider = nil
@@ -768,7 +768,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     row[8]:createButton({ active = true }):setText(data.edit.slider and data.edit.slider.param == "limit" and texts.acceptButton or formattedLimit, { halign = "center" })
     row[8].handlers.onClick = function()
       if not data.edit.slider or data.edit.slider.param ~= "limit" then
-        data.edit.slider = { param = "limit", ware = ware.ware, offerType = offerType }
+        data.edit.slider = { param = "limit", ware = ware.ware, part = offerType }
         debugTrace("Activating limit slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
       else
         data.edit.slider = nil
@@ -832,7 +832,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   else
     row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
   end
-  if data.edit.slider ~= nil and data.edit.slider.ware == ware.ware and data.edit.slider.offerType == offerType then
+  if data.edit.slider ~= nil and data.edit.slider.ware == ware.ware and data.edit.slider.part == offerType then
     local row = tableContent:addRow(true)
     if data.edit.slider.param == "price" then
       local currentPrice = (isBuy and data.edit.changed.priceBuy or data.edit.changed.priceSell) or offerData.price
@@ -1147,7 +1147,7 @@ local function render()
             row[11]:createButton({ active = true }):setText(data.edit.slider and data.edit.slider.param == "storageLimit" and texts.acceptButton or formattedLimit, { halign = "center" })
             row[11].handlers.onClick = function()
               if not data.edit.slider or data.edit.slider.param ~= "storageLimit" then
-                data.edit.slider = { param = "storageLimit", ware = ware.ware }
+                data.edit.slider = { param = "storageLimit", ware = ware.ware, part = "ware" }
                 debugTrace("Activating storage limit slider for ware " .. tostring(ware.ware))
               else
                 data.edit.slider = nil
@@ -1160,6 +1160,35 @@ local function render()
           else
             row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
               optionsNumber(wareInfo.storageLimitOverride))
+          end
+          if data.edit.slider ~= nil and data.edit.slider.ware == ware.ware and data.edit.slider.part == "ware" then
+            local row = tableContent:addRow(true)
+            if data.edit.slider.param == "storageLimit" then
+              local currentLimit = data.edit.changed.storageLimit or wareInfo.storageLimit
+              local cargoCapacity = stationEntry.cargoCapacities[wareInfo.transport] or 0
+              currentLimit = math.max(0, math.min(cargoCapacity, currentLimit))
+              row[2]:setColSpan(10):createSliderCell(
+                {
+                  height = Helper.standardTextHeight,
+                  valueColor = Color["slider_value"],
+                  min = 0,
+                  minSelect = cargoCapacity == 0 and 0 or 1,
+                  max = cargoCapacity,
+                  start = math.min(cargoCapacity, currentLimit),
+                  readOnly = false,
+                  hideMaxValue = true,
+                  forceArrows = true,
+                }):setText(texts.storage, { halign = "left", width = Helper.scaleX(120) })
+              row[2].handlers.onSliderCellChanged = function(_, value)
+                data.edit.changed.storageLimit = value
+                data.edit.confirmed = false
+                debugTrace("Set ware " .. tostring(ware.ware) .. " storage limit edit to " .. tostring(value))
+                data.statusMessage = nil
+                render()
+              end
+              -- row[2].handlers.onSliderCellActivated = function() menu.noupdate = true end
+              -- row[2].handlers.onSliderCellDeactivated = function() menu.noupdate = false end
+            end
           end
           renderOffer(tableContent, data, stationEntry.tradeData, ware, "buy", readyToSelectWares, render)
           renderOffer(tableContent, data, stationEntry.tradeData, ware, "sell", readyToSelectWares, render)

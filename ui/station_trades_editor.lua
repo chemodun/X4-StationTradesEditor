@@ -475,14 +475,13 @@ local function reInitData(cloneOnly)
     menu.contextMenuData = {}
   end
   local data = menu.contextMenuData
-  data.clone = {}
-  data.clone.wares = {}
-  data.clone.types = {}
-  data.clone.wholeStation = false
-  data.clone.confirmed = false
-  if cloneOnly then
-    return
-  end
+  data.edit = {
+    selectedWares = {},
+    selectedType = nil,
+    changed = {},
+    slider = nil,
+    confirmed = false,
+  }
   data.content = {}
   data.waresStartIndex = 1
   data.waresCountTotal = 0
@@ -1474,13 +1473,6 @@ local function show()
     layer = menu.contextFrameLayer or 2,
     contentHeight = math.floor(Helper.viewHeight * 0.6),
     waresOnScreenMax = 30,
-    edit = {
-      selectedWares = {},
-      selectedType = nil,
-      changed = {},
-      slider = nil,
-      confirmed = false,
-    },
   }
 
   data.stations, data.stationOptions = buildStationCache()

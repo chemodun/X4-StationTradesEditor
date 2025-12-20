@@ -44,18 +44,13 @@ local playerId = nil
 local texts = {
   title = ReadText(1972092410, 1001),
   station = ReadText(1972092410, 1011),
-  stationOne = ReadText(1972092410, 1011),
-  stationTwo = ReadText(1972092410, 1012),
-  noMatchingStations = ReadText(1972092410, 1019),
   ware = ReadText(1972092410, 1101),
   storage = ReadText(1972092410, 1102),
   rule = ReadText(1972092410, 1103),
   price = ReadText(1972092410, 1104),
   priceSuffix = ReadText(1001, 101),
   amount = ReadText(1972092410, 1105),
-  buyOfferSellOffer = ReadText(1972092410, 1111),
-  selectStationOnePrompt = ReadText(1972092410, 1201),
-  selectStationTwoPrompt = ReadText(1972092410, 1202),
+  selectStationPrompt = ReadText(1972092410, 1201),
   noWaresAvailable = ReadText(1972092410, 1203),
   buyOffer = ReadText(1001, 8309),
   sellOffer = ReadText(1001, 8308),
@@ -497,8 +492,7 @@ local function applyChanges(menu)
     return
   end
   local stationEntry = data.selectedStation and data.stations[data.selectedStation]
-  local stationTwoEntry = data.selectedStationTwo and data.stations[data.selectedStationTwo]
-  if not stationEntry or not stationTwoEntry then
+  if not stationEntry then
     data.statusMessage = texts.statusNoStationSelected
     data.statusColor = Color["text_warning"]
     return
@@ -926,7 +920,7 @@ local function render()
   if stationEntry == nil then
     debugTrace("No stations are selected")
     row = tableContent:addRow(false)
-    row[2]:setColSpan(columns - 1):createText(texts.selectStationOnePrompt,
+    row[2]:setColSpan(columns - 1):createText(texts.selectStationPrompt,
       { color = Color["text_warning"], halign = "center" })
   else
     debugTrace("Station: " .. tostring(stationEntry.displayName) .. " (" .. tostring(stationEntry.id64) .. ")")

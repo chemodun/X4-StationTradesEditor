@@ -59,6 +59,7 @@ local texts = {
   noWaresAvailable = ReadText(1972092410, 1203),
   buyOffer = ReadText(1001, 8309),
   sellOffer = ReadText(1001, 8308),
+  mainPart = "Primary",
   auto = ReadText(1972092410, 1211),
   noBuyOffer = ReadText(1972092410, 1212),
   noSellOffer = ReadText(1972092410, 1213),
@@ -75,7 +76,9 @@ local texts = {
   statusNoWaresAvailable = ReadText(1972092410, 2002),
   statusSavedWithWarnings = ReadText(1972092410, 2012),
   statusSuccess = ReadText(1972092410, 2011),
-  statusSelectionInfo = ReadText(1972092410, 2101),
+  statusSelectedForDeletion = "Selected %d wares for deletion.",--ReadText(1972092410, 2101)
+  statusSelectedWareInfo = "For %s selected %s part of info for edit.",
+  statusChangedValue = "Changed %s. Old value: %s, New value: %s.",
 }
 
 
@@ -1347,19 +1350,71 @@ local function render()
     menu.closeContextMenu()
   end
 
-  local cloneCounts = countCloneSelections(data)
-  if cloneCounts and (cloneCounts.full + cloneCounts.storage + cloneCounts.buy + cloneCounts.sell > 0) then
-    data.statusMessage = string.format(tostring(texts.statusSelectionInfo or ""),
-      tostring(cloneCounts.full),
-      tostring(cloneCounts.storage),
-      tostring(cloneCounts.buy),
-      tostring(cloneCounts.sell))
-    data.statusColor = Color["text_inactive"]
+  if data.statusMessage == nil then
+    local selectedWare = nil
+    local selectedPart = nil
+    if next(data.edit.selectedWares) ~= nil then
+      local count = 0
+      for ware, part in pairs(data.edit.selectedWares) do
+        if count == 0 then
+          selectedWare = ware
+          selectedPart = part
+        end
+        count = count + 1
+      end
+      if count > 1 then
+        data.statusMessage = string.format(tostring(texts.statusSelectedForDeletion or ""), tostring(count))
+        data.statusColor = Color["text_warning"]
+      else
+        local partText = selectedPart == "ware" and texts.mainPart or (selectedPart == "buy" and texts.buyOffer or texts.sellOffer)
+        local wareInfo = stationEntry.tradeData.waresMap[selectedWare] or {}
+        data.statusMessage = string.format(tostring(texts.statusSelectedWareInfo or ""), wareInfo.name or "unknown", partText)
+        if data.edit.changed.storageLimit and data.edit.changed.storageLimit ~= wareInfo.storageLimit then
+          data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.storage,
+            formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, true),
+            formatNumberWithPercentage(data.edit.changed.storageLimit,
+              (stationEntry.cargoCapacities[wareInfo.transport] and stationEntry.cargoCapacities[wareInfo.transport] > 0) and
+              (100.00 * data.edit.changed.storageLimit / stationEntry.cargoCapacities[wareInfo.transport]) or 100.00,
+              true))
+        end
+        if data.edit.changed.priceBuy and data.edit.changed.priceBuy ~= wareInfo.buy.price then
+          data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.price,
+            formatNumber(wareInfo.buy.price, true),
+            formatNumber(data.edit.changed.priceBuy, true))
+        elseif data.edit.changed.priceSell and data.edit.changed.priceSell ~= wareInfo.sell.price then
+          data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.price,
+            formatNumber(wareInfo.sell.price, true),
+            formatNumber(data.edit.changed.priceSell, true))
+        end
+        if data.edit.changed.limitBuy and data.edit.changed.limitBuy ~= wareInfo.buy.limit then
+          data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.amount,
+            formatNumberWithPercentage(wareInfo.buy.limit, wareInfo.buy.limitPercentage, true),
+            formatNumberWithPercentage(data.edit.changed.limitBuy,
+              (wareInfo.storageLimit > 0) and (100.00 * data.edit.changed.limitBuy / wareInfo.storageLimit) or 100.00, true))
+        elseif data.edit.changed.limitSell and data.edit.changed.limitSell ~= wareInfo.sell.limit then
+          data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.amount,
+            formatNumberWithPercentage(wareInfo.sell.limit, wareInfo.sell.limitPercentage, true),
+            formatNumberWithPercentage(data.edit.changed.limitSell,
+              (wareInfo.storageLimit > 0) and (100.00 * data.edit.changed.limitSell / wareInfo.storageLimit) or 100.00, true))
+        end
+        if data.edit.changed.ruleBuy and data.edit.changed.ruleBuy ~= wareInfo.buy.rule then
+          data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.rule,
+            formatTradeRuleLabel(wareInfo.buy.rule, wareInfo.buy.ruleOverride, wareInfo.buy.ruleRoot),
+            formatTradeRuleLabel(data.edit.changed.ruleBuy, true, wareInfo.buy.ruleRoot))
+        elseif data.edit.changed.ruleSell and data.edit.changed.ruleSell ~= wareInfo.sell.rule then
+          data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.rule,
+            formatTradeRuleLabel(wareInfo.sell.rule, wareInfo.sell.ruleOverride, wareInfo.sell.ruleRoot),
+            formatTradeRuleLabel(data.edit.changed.ruleSell, true, wareInfo.sell.ruleRoot))
+        end
+        data.statusColor = Color["text_inactive"]
+      end
+    end
   end
-
   if data.statusMessage then
     local statusRow = tableBottom:addRow(false, { fixed = true })
     statusRow[1]:setColSpan(8):createText(data.statusMessage, { wordwrap = true, color = data.statusColor })
+    data.statusMessage = nil
+    data.statusColor = nil
   end
   tableBottom:setSelectedCol(8)
 

@@ -486,9 +486,9 @@ local function reInitData(editOnly)
   data.waresCountTotal = 0
 end
 
-local function applyChanges(menu)
-  local data = menu.contextMenuData
-  if not data then
+local function applyChanges(menu, ware)
+  local data = menu and menu.contextMenuData or nil
+  if not data or not ware then
     return
   end
   local stationEntry = data.selectedStation and data.stations[data.selectedStation]
@@ -498,9 +498,72 @@ local function applyChanges(menu)
     return
   end
 
-  debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName))
+  if data.edit.changed == nil or next(data.edit.changed) == nil then
+    data.statusMessage = texts.statusSuccess
+    data.statusColor = Color["text_success"]
+    return
+  end
 
-  local stationData = collectTradeData(stationEntry)
+  local changed = data.edit.changed
+  local tradeData = collectTradeData(stationEntry)
+  local wareInfo = tradeData.waresMap[ware]
+  if not wareInfo then
+    data.statusMessage = texts.statusNoWaresAvailable
+    data.statusColor = Color["text_warning"]
+    return
+  end
+
+  debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName))
+  if changed.storageLimitOverride ~= nil and changed.storageLimitOverride or changed.storageLimit ~= nil then
+    SetContainerStockLimitOverride(stationEntry.id64, ware, changed.storageLimit ~= nil and changed.storageLimit or wareInfo.storageLimit)
+  end
+  if changed.storageLimitOverride ~= nil and not changed.storageLimitOverride then
+    ClearContainerStockLimitOverride(stationEntry.id64, ware)
+  end
+
+  if changed.priceOverrideBuy ~= nil and changed.priceOverrideBuy or changed.priceBuy ~= nil then
+    SetContainerWarePriceOverride(stationEntry.id64, ware, true, changed.priceBuy ~= nil and changed.priceBuy or wareInfo.buy.price)
+  end
+  if changed.priceOverrideBuy ~= nil and not changed.priceOverrideBuy then
+    ClearContainerWarePriceOverride(stationEntry.id64, ware, true)
+  end
+
+  if changed.priceOverrideSell ~= nil and changed.priceOverrideSell or changed.priceSell ~= nil then
+    SetContainerWarePriceOverride(stationEntry.id64, ware, false, changed.priceSell ~= nil and changed.priceSell or wareInfo.sell.price)
+  end
+  if changed.priceOverrideSell ~= nil and not changed.priceOverrideSell then
+    ClearContainerWarePriceOverride(stationEntry.id64, ware, false)
+  end
+
+  if changed.limitOverrideBuy ~= nil and changed.limitOverrideBuy or changed.limitBuy ~= nil then
+    C.SetContainerBuyLimitOverride(stationEntry.id64, ware, changed.limitBuy ~= nil and changed.limitBuy or wareInfo.buy.limit)
+  end
+  if changed.limitOverrideBuy ~= nil and not changed.limitOverrideBuy then
+    C.ClearContainerBuyLimitOverride(stationEntry.id64, ware)
+  end
+
+  if changed.limitOverrideSell ~= nil and changed.limitOverrideSell or changed.limitSell ~= nil then
+    C.SetContainerSellLimitOverride(stationEntry.id64, ware, changed.limitSell ~= nil and changed.limitSell or wareInfo.sell.limit)
+  end
+  if changed.limitOverrideSell ~= nil and not changed.limitOverrideSell then
+    C.ClearContainerSellLimitOverride(stationEntry.id64, ware)
+  end
+
+  if changed.ruleOverrideBuy ~= nil and changed.ruleOverrideBuy or changed.ruleBuy ~= nil then
+    C.SetContainerTradeRule(stationEntry.id64, changed.ruleBuy ~= nil and changed.ruleBuy or wareInfo.buy.rule, "buy", ware, true)
+  end
+  if changed.ruleOverrideBuy ~= nil and not changed.ruleOverrideBuy then
+    C.SetContainerTradeRule(stationEntry.id64, -1, "buy", ware, false)
+  end
+  if changed.ruleOverrideSell ~= nil and changed.ruleOverrideSell or changed.ruleSell ~= nil then
+    C.SetContainerTradeRule(stationEntry.id64, changed.ruleSell ~= nil and changed.ruleSell or wareInfo.sell.rule, "sell", ware, true)
+  end
+  if changed.ruleOverrideSell ~= nil and not changed.ruleOverrideSell then
+    C.SetContainerTradeRule(stationEntry.id64, -1, "sell", ware, false)
+  end
+
+  data.statusMessage = texts.statusSuccess
+  data.statusColor = Color["text_success"]
 
   collectTradeData(stationEntry, true)
   reInitData(true)
@@ -562,7 +625,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   local priceEdit = false
   local priceOverride = offerData.priceOverride
   if editOffer then
-    priceOverride = calculateOverride(isBuy and data.edit.changed.priceOverrideBuy or data.edit.changed.priceOverrideSell, offerData.priceOverride) or false
+    if isBuy then
+      priceOverride = calculateOverride(data.edit.changed.priceOverrideBuy, offerData.priceOverride)
+    else
+      priceOverride = calculateOverride(data.edit.changed.priceOverrideSell, offerData.priceOverride)
+    end
     row[4]:createCheckBox(not priceOverride, { active = true })
     row[4].handlers.onClick = function(_, checked)
       if isBuy then
@@ -614,7 +681,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   local limitEdit = false
   local limitOverride = offerData.limitOverride
   if editOffer then
-    limitOverride = calculateOverride(isBuy and data.edit.changed.limitOverrideBuy or data.edit.changed.limitOverrideSell, offerData.limitOverride) or false
+    if isBuy then
+      limitOverride = calculateOverride(data.edit.changed.limitOverrideBuy, offerData.limitOverride)
+    else
+      limitOverride = calculateOverride(data.edit.changed.limitOverrideSell, offerData.limitOverride)
+    end
     row[7]:createCheckBox(not limitOverride, { active = true })
     row[7].handlers.onClick = function(_, checked)
       if isBuy then
@@ -667,7 +738,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   row[9]:createText(texts.rule .. ":")
   local ruleEdit = false
   if editOffer then
-    local ruleOverride = calculateOverride(isBuy and data.edit.changed.ruleOverrideBuy or data.edit.changed.ruleOverrideSell, offerData.ruleOverride) or false
+    if isBuy then
+      ruleOverride = calculateOverride(data.edit.changed.ruleOverrideBuy, offerData.ruleOverride)
+    else
+      ruleOverride = calculateOverride(data.edit.changed.ruleOverrideSell, offerData.ruleOverride)
+    end
     row[10]:createCheckBox(not ruleOverride, { active = true })
     row[10].handlers.onClick = function(_, checked)
       if isBuy then
@@ -722,7 +797,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       render()
     end
   else
-    row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
+    row[11]:createText(formatTradeRuleLabel(offerData.rule, ruleOverride, not ruleOverride and offerData.ruleRoot or "station"), optionsRule(ruleOverride))
   end
   if data.edit.slider ~= nil and data.edit.slider.ware == ware.ware and data.edit.slider.part == offerType then
     local row = tableContent:addRow(true)
@@ -1231,11 +1306,11 @@ local function render()
     end
   end
 
-  row[6]:createButton({ active = countSelectedWares == 1 and dataIsChanged and data.edit.confirmed }):setText(texts.saveButton,
+  row[6]:createButton({ active = dataIsChanged and data.edit.confirmed }):setText(texts.saveButton,
     { halign = "center" })
   row[6].handlers.onClick = function()
-    if countSelectedWares == 1 and dataIsChanged then
-      applyChanges(menu)
+    if dataIsChanged then
+      applyChanges(menu, selectedWare)
       render()
     end
   end

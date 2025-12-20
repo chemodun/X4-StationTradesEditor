@@ -698,8 +698,9 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   end
   row[3]:createText(texts.price .. ":")
   local priceEdit = false
+  local priceOverride = offerData.priceOverride
   if editOffer then
-    local priceOverride = calculateOverride(isBuy and data.edit.changed.priceOverrideBuy or data.edit.changed.priceOverrideSell, offerData.priceOverride) or false
+    priceOverride = calculateOverride(isBuy and data.edit.changed.priceOverrideBuy or data.edit.changed.priceOverrideSell, offerData.priceOverride) or false
     row[4]:createCheckBox(not priceOverride, { active = true })
     row[4].handlers.onClick = function(_, checked)
       if isBuy then
@@ -739,12 +740,13 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       render()
     end
   else
-    row[5]:createText(formatPrice(offerData.price, offerData.priceOverride), optionsNumber(offerData.priceOverride))
+    row[5]:createText(formatPrice(offerData.price, priceOverride), optionsNumber(priceOverride))
   end
   row[6]:createText(texts.amount .. ":")
   local limitEdit = false
+  local limitOverride = offerData.limitOverride
   if editOffer then
-    local limitOverride = calculateOverride(isBuy and data.edit.changed.limitOverrideBuy or data.edit.changed.limitOverrideSell, offerData.limitOverride) or false
+    limitOverride = calculateOverride(isBuy and data.edit.changed.limitOverrideBuy or data.edit.changed.limitOverrideSell, offerData.limitOverride) or false
     row[7]:createCheckBox(not limitOverride, { active = true })
     row[7].handlers.onClick = function(_, checked)
       if isBuy then
@@ -786,7 +788,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       render()
     end
   else
-    row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, offerData.limitOverride), optionsNumber(offerData.limitOverride))
+    row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, limitOverride), optionsNumber(limitOverride))
   end
   row[9]:createText(texts.rule .. ":")
   local ruleEdit = false
@@ -861,7 +863,13 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       row[2].handlers.onSliderCellChanged = function(_, value)
         if isBuy then
           data.edit.changed.priceBuy = value
+          if data.edit.changed.priceOverrideBuy == nil then
+            data.edit.changed.priceOverrideBuy = true
+          end
         else
+          if data.edit.changed.priceOverrideSell == nil then
+            data.edit.changed.priceOverrideSell = true
+          end
           data.edit.changed.priceSell = value
         end
         data.edit.confirmed = false
@@ -891,8 +899,14 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       row[2].handlers.onSliderCellChanged = function(_, value)
         if isBuy then
           data.edit.changed.limitBuy = value
+          if data.edit.changed.limitOverrideBuy == nil then
+            data.edit.changed.limitOverrideBuy = true
+          end
         else
           data.edit.changed.limitSell = value
+          if data.edit.changed.limitOverrideSell == nil then
+            data.edit.changed.limitOverrideSell = true
+          end
         end
         data.edit.confirmed = false
         debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer limit edit to " .. tostring(value))
@@ -1136,8 +1150,9 @@ local function render()
           row[8]:createText(formatNumber(wareInfo.amount, true), cargoAmountTextProperties)
           row[9]:createText(texts.storage .. ":")
           local storageLimitEdit = false
+          local storageLimitOverride = wareInfo.storageLimitOverride
           if data.edit.selectedType == nil and data.edit.selectedWares[ware.ware] == "ware" then
-            local storageLimitOverride = calculateOverride(data.edit.changed.storageLimitOverride, wareInfo.storageLimitOverride)
+            storageLimitOverride = calculateOverride(data.edit.changed.storageLimitOverride, wareInfo.storageLimitOverride)
             row[10]:createCheckBox(not storageLimitOverride, { active = true })
             row[10].handlers.onClick = function(_, checked)
               data.edit.changed.storageLimitOverride = not checked
@@ -1173,8 +1188,8 @@ local function render()
               render()
             end
           else
-            row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride),
-              optionsNumber(wareInfo.storageLimitOverride))
+            row[11]:createText(formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, storageLimitOverride),
+              optionsNumber(storageLimitOverride))
           end
           if data.edit.slider ~= nil and data.edit.slider.ware == ware.ware and data.edit.slider.part == "ware" then
             local row = tableContent:addRow(true)
@@ -1368,42 +1383,42 @@ local function render()
         local partText = selectedPart == "ware" and texts.mainPart or (selectedPart == "buy" and texts.buyOffer or texts.sellOffer)
         local wareInfo = stationEntry.tradeData.waresMap[selectedWare] or {}
         data.statusMessage = string.format(tostring(texts.statusSelectedWareInfo or ""), wareInfo.name or "unknown", partText)
-        if data.edit.changed.storageLimit and data.edit.changed.storageLimit ~= wareInfo.storageLimit then
+        if data.edit.changed.storageLimit and (data.edit.changed.storageLimit ~= wareInfo.storageLimit or data.edit.changed.storageLimitOverride ~= wareInfo.storageLimitOverride) then
           data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.storage,
             formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, true),
             formatNumberWithPercentage(data.edit.changed.storageLimit,
               (stationEntry.cargoCapacities[wareInfo.transport] and stationEntry.cargoCapacities[wareInfo.transport] > 0) and
               (100.00 * data.edit.changed.storageLimit / stationEntry.cargoCapacities[wareInfo.transport]) or 100.00,
-              true))
+              data.edit.changed.storageLimitOverride))
         end
-        if data.edit.changed.priceBuy and data.edit.changed.priceBuy ~= wareInfo.buy.price then
+        if data.edit.changed.priceBuy and (data.edit.changed.priceBuy ~= wareInfo.buy.price or data.edit.changed.priceBuyOverride ~= wareInfo.buy.priceOverride) then
           data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.price,
             formatNumber(wareInfo.buy.price, true),
-            formatNumber(data.edit.changed.priceBuy, true))
-        elseif data.edit.changed.priceSell and data.edit.changed.priceSell ~= wareInfo.sell.price then
+            formatNumber(data.edit.changed.priceBuy, data.edit.changed.priceBuyOverride))
+        elseif data.edit.changed.priceSell and (data.edit.changed.priceSell ~= wareInfo.sell.price or data.edit.changed.priceSellOverride ~= wareInfo.sell.priceOverride) then
           data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.price,
             formatNumber(wareInfo.sell.price, true),
-            formatNumber(data.edit.changed.priceSell, true))
+            formatNumber(data.edit.changed.priceSell, data.edit.changed.priceSellOverride))
         end
-        if data.edit.changed.limitBuy and data.edit.changed.limitBuy ~= wareInfo.buy.limit then
+        if data.edit.changed.limitBuy and (data.edit.changed.limitBuy ~= wareInfo.buy.limit or data.edit.changed.limitBuyOverride ~= wareInfo.buy.limitOverride) then
           data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.amount,
             formatNumberWithPercentage(wareInfo.buy.limit, wareInfo.buy.limitPercentage, true),
             formatNumberWithPercentage(data.edit.changed.limitBuy,
-              (wareInfo.storageLimit > 0) and (100.00 * data.edit.changed.limitBuy / wareInfo.storageLimit) or 100.00, true))
-        elseif data.edit.changed.limitSell and data.edit.changed.limitSell ~= wareInfo.sell.limit then
+              (wareInfo.storageLimit > 0) and (100.00 * data.edit.changed.limitBuy / wareInfo.storageLimit) or 100.00, data.edit.changed.limitBuyOverride))
+        elseif data.edit.changed.limitSell and (data.edit.changed.limitSell ~= wareInfo.sell.limit or data.edit.changed.limitSellOverride ~= wareInfo.sell.limitOverride) then
           data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.amount,
             formatNumberWithPercentage(wareInfo.sell.limit, wareInfo.sell.limitPercentage, true),
             formatNumberWithPercentage(data.edit.changed.limitSell,
-              (wareInfo.storageLimit > 0) and (100.00 * data.edit.changed.limitSell / wareInfo.storageLimit) or 100.00, true))
+              (wareInfo.storageLimit > 0) and (100.00 * data.edit.changed.limitSell / wareInfo.storageLimit) or 100.00, data.edit.changed.limitSellOverride))
         end
-        if data.edit.changed.ruleBuy and data.edit.changed.ruleBuy ~= wareInfo.buy.rule then
+        if data.edit.changed.ruleBuy and (data.edit.changed.ruleBuy ~= wareInfo.buy.rule or data.edit.changed.ruleBuyOverride ~= wareInfo.buy.ruleOverride) then
           data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.rule,
             formatTradeRuleLabel(wareInfo.buy.rule, wareInfo.buy.ruleOverride, wareInfo.buy.ruleRoot),
-            formatTradeRuleLabel(data.edit.changed.ruleBuy, true, wareInfo.buy.ruleRoot))
-        elseif data.edit.changed.ruleSell and data.edit.changed.ruleSell ~= wareInfo.sell.rule then
+            formatTradeRuleLabel(data.edit.changed.ruleBuy, data.edit.changed.ruleBuyOverride, wareInfo.buy.ruleRoot))
+        elseif data.edit.changed.ruleSell and (data.edit.changed.ruleSell ~= wareInfo.sell.rule or data.edit.changed.ruleSellOverride ~= wareInfo.sell.ruleOverride) then
           data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.rule,
             formatTradeRuleLabel(wareInfo.sell.rule, wareInfo.sell.ruleOverride, wareInfo.sell.ruleRoot),
-            formatTradeRuleLabel(data.edit.changed.ruleSell, true, wareInfo.sell.ruleRoot))
+            formatTradeRuleLabel(data.edit.changed.ruleSell, data.edit.changed.ruleSellOverride, wareInfo.sell.ruleRoot))
         end
         data.statusColor = Color["text_inactive"]
       end

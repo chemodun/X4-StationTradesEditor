@@ -730,13 +730,14 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       if not data.edit.slider or data.edit.slider.param ~= "price" then
         data.edit.slider = { param = "price", ware = ware.ware, part = offerType }
         debugTrace("Activating price slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+        data.content.selectedRow = row.index + 1
       else
         data.edit.slider = nil
         debugTrace("Deactivating price slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+        data.content.selectedRow = row.index
       end
       data.edit.confirmed = false
       data.statusMessage = nil
-      data.content.selectedRow = row.index
       render()
     end
   else
@@ -778,13 +779,14 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       if not data.edit.slider or data.edit.slider.param ~= "limit" then
         data.edit.slider = { param = "limit", ware = ware.ware, part = offerType }
         debugTrace("Activating limit slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+        data.content.selectedRow = row.index + 1
       else
         data.edit.slider = nil
         debugTrace("Deactivating limit slider for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
+        data.content.selectedRow = row.index
       end
       data.edit.confirmed = false
       data.statusMessage = nil
-      data.content.selectedRow = row.index
       render()
     end
   else
@@ -1178,13 +1180,14 @@ local function render()
               if not data.edit.slider or data.edit.slider.param ~= "storageLimit" then
                 data.edit.slider = { param = "storageLimit", ware = ware.ware, part = "ware" }
                 debugTrace("Activating storage limit slider for ware " .. tostring(ware.ware))
+                data.content.selectedRow = row.index + 1
               else
                 data.edit.slider = nil
                 debugTrace("Deactivating storage limit slider for ware " .. tostring(ware.ware))
+                data.content.selectedRow = row.index
               end
               data.edit.confirmed = false
               data.statusMessage = nil
-              data.content.selectedRow = row.index
               render()
             end
           else

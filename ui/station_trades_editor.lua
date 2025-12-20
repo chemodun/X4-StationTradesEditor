@@ -70,6 +70,7 @@ local texts = {
   pageInfo = ReadText(1972092410, 1301),
   confirmSave = ReadText(1972092410, 1401),
   saveButton = ReadText(1972092410, 1411),
+  deleteButton = "Delete [ %d ]",
   cancelButton = ReadText(1972092410, 1419),
   acceptButton = "Accept",
   statusNoStationSelected = ReadText(1972092410, 2001),
@@ -466,7 +467,7 @@ local function getWareList(stationData)
   return list
 end
 
-local function reInitData(cloneOnly)
+local function reInitData(editOnly)
   if type(menu) ~= "table" then
     debugTrace("TradesEditor: reInitData: Invalid menu instance")
     return
@@ -482,186 +483,53 @@ local function reInitData(cloneOnly)
     slider = nil,
     confirmed = false,
   }
+  if editOnly then
+    return
+  end
   data.content = {}
   data.waresStartIndex = 1
   data.waresCountTotal = 0
 end
 
-local function applyClone(menu, leftToRight)
+local function applyChanges(menu)
   local data = menu.contextMenuData
   if not data then
     return
   end
-  local stationOneEntry = data.selectedStationOne and data.stations[data.selectedStationOne]
+  local stationEntry = data.selectedStation and data.stations[data.selectedStation]
   local stationTwoEntry = data.selectedStationTwo and data.stations[data.selectedStationTwo]
-  if not stationOneEntry or not stationTwoEntry then
+  if not stationEntry or not stationTwoEntry then
     data.statusMessage = texts.statusNoStationSelected
     data.statusColor = Color["text_warning"]
     return
   end
-  local sourceEntry = leftToRight and stationOneEntry or stationTwoEntry
-  local targetEntry = leftToRight and stationTwoEntry or stationOneEntry
 
-  local sourceData = collectTradeData(sourceEntry)
-  local targetData = collectTradeData(targetEntry)
-  local toClone = data.clone.wares
-  if toClone == nil or data.clone.confirmed ~= true then
-    data.statusMessage = texts.statusNoWaresAvailable
+  debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName))
+
+  local stationData = collectTradeData(stationEntry)
+
+  collectTradeData(stationEntry, true)
+  reInitData(true)
+end
+
+local function applyDelete(menu)
+  local data = menu.contextMenuData
+  if not data then
+    return
+  end
+  local stationEntry = data.selectedStation and data.stations[data.selectedStation]
+  if not stationEntry then
+    data.statusMessage = texts.statusNoStationSelected
     data.statusColor = Color["text_warning"]
     return
   end
 
-  local skipped = {}
-  local processedWaresCount = 0
-  for ware, parts in pairs(toClone) do
-    local sourceWareData = sourceData.waresMap[ware]
-    local targetWareData = targetData.waresMap[ware]
-    if (sourceWareData or targetWareData) and (parts.storage or parts.buy or parts.sell) then
-      if not sourceWareData and not (parts.storage and parts.buy and parts.sell) then
-        debugTrace("Skipping ware " .. tostring(ware) .. " as it is not present in source station and not fully selected for removal")
-        skipped[#skipped + 1] = targetWareData.name or ware
-      elseif not sourceWareData and (parts.storage and parts.buy and parts.sell) then
-        debugTrace("Removing ware " .. tostring(ware) .. " from target station as it is not present in source station")
-        if targetData.storageLimitOverride then
-          debugTrace("Clearing storage limit override for ware " .. tostring(ware) .. " on target station")
-          ClearContainerStockLimitOverride(targetEntry.id64, ware)
-        end
-        if targetWareData.buy.allowed then
-          debugTrace("Removing buy offer for ware " .. tostring(ware) .. " on target station")
-          C.ClearContainerBuyLimitOverride(targetEntry.id64, ware)
-          C.SetContainerWareIsBuyable(targetEntry.id64, ware, false)
-          ClearContainerWarePriceOverride(targetEntry.id64, ware, true)
-        end
-        if targetWareData.sell.allowed then
-          debugTrace("Removing sell offer for ware " .. tostring(ware) .. " on target station")
-          C.ClearContainerSellLimitOverride(targetEntry.id64, ware)
-          C.SetContainerWareIsSellable(targetEntry.id64, ware, false)
-          ClearContainerWarePriceOverride(targetEntry.id64, ware, false)
-        end
-        if targetWareData.amount == 0 then
-          C.RemoveTradeWare(targetEntry.id64, ware)
-        end
-      elseif sourceWareData and not targetWareData and not (parts.storage and parts.buy and parts.sell) then
-        debugTrace("Skipping ware " .. tostring(ware) .. " as it is not present in target station and not fully selected for addition")
-        skipped[#skipped + 1] = sourceWareData.name or ware
-      else
-        if sourceWareData and not targetWareData then
-          debugTrace("Adding ware " .. tostring(ware) .. " to target station")
-          C.AddTradeWare(targetEntry.id64, ware)
-        end
-        if parts.storage then
-          if sourceWareData and not sourceWareData.storageLimitOverride and (targetWareData == nil or not targetWareData.storageLimitOverride) then
-            debugTrace("Skipping storage limit clone for ware " .. tostring(ware) .. " as both source and target have no override")
-          elseif sourceWareData and not sourceWareData.storageLimitOverride and targetWareData and targetWareData.storageLimitOverride then
-            debugTrace("Clearing storage limit override for ware " .. tostring(ware) .. " on target station")
-            ClearContainerStockLimitOverride(targetEntry.id64, ware)
-          elseif sourceWareData and sourceWareData.storageLimitOverride then
-            local sourceLimit = sourceWareData.storageLimit
-            local transport = sourceWareData.transport
-            local newLimit = 0
-            if transport and targetEntry.cargoCapacities[transport] and targetEntry.cargoCapacities[transport] > 0 then
-              newLimit = math.floor(sourceWareData.storageLimitPercentage * targetEntry.cargoCapacities[transport] / 100)
-            end
-            if newLimit > 0 then
-              SetContainerStockLimitOverride(targetEntry.id64, ware, newLimit)
-              debugTrace("Setting storage limit override for ware " ..
-                tostring(ware) .. " on target station to " .. tostring(sourceLimit) .. " (was " .. tostring(newLimit) .. ")")
-            else
-              debugTrace("Skipping setting storage limit override for ware " .. tostring(ware) .. " on target station as computed limit is zero")
-            end
-          end
-        end
-        for key, value in pairs({ buy = true, sell = true }) do
-          if parts[key] then
-            debugTrace("Cloning " .. key .. " offer for ware " .. tostring(ware))
-            if not sourceWareData[key].allowed and (targetWareData == nil or not targetWareData[key].allowed) then
-              debugTrace("Skipping " .. key .. " offer clone for ware " .. tostring(ware) .. " as both source and target have no " .. key .. " offer")
-            elseif not sourceWareData[key].allowed and targetWareData and targetWareData[key].allowed then
-              debugTrace("Removing " .. key .. " offer for ware " .. tostring(ware) .. " on target station")
-              if key == "buy" then
-                C.ClearContainerBuyLimitOverride(targetEntry.id64, ware)
-                C.SetContainerWareIsBuyable(targetEntry.id64, ware, false)
-              else
-                C.ClearContainerSellLimitOverride(targetEntry.id64, ware)
-                C.SetContainerWareIsSellable(targetEntry.id64, ware, false)
-              end
-            else
-              if sourceWareData[key].allowed and (targetWareData == nil or not targetWareData[key].allowed) then
-                debugTrace("Adding " .. key .. " offer for ware " .. tostring(ware) .. " on target station")
-                if key == "buy" then
-                  C.SetContainerWareIsBuyable(targetEntry.id64, ware, true)
-                else
-                  C.SetContainerWareIsSellable(targetEntry.id64, ware, true)
-                end
-              end
-              if not sourceWareData[key].priceOverride and targetWareData and targetWareData[key].priceOverride then
-                debugTrace("Clearing " .. key .. " price override for ware " .. tostring(ware) .. " on target station")
-                ClearContainerWarePriceOverride(targetEntry.id64, ware, key == "buy")
-              elseif sourceWareData[key].priceOverride then
-                debugTrace("Setting " ..
-                  key ..
-                  " price override for ware " ..
-                  tostring(ware) ..
-                  " on target station to " ..
-                  tostring(sourceWareData[key].price) .. " (was " .. tostring(targetWareData and targetWareData[key].price or 0) .. ")")
-                SetContainerWarePriceOverride(targetEntry.id64, ware, key == "buy", sourceWareData[key].price)
-              end
-              if not sourceWareData[key].limitOverride and targetWareData and targetWareData[key].limitOverride then
-                debugTrace("Clearing " .. key .. " limit override for ware " .. tostring(ware) .. " on target station")
-                if key == "buy" then
-                  C.ClearContainerBuyLimitOverride(targetEntry.id64, ware)
-                else
-                  C.ClearContainerSellLimitOverride(targetEntry.id64, ware)
-                end
-              elseif sourceWareData[key].limitOverride then
-                local newLimit = sourceWareData[key].limit
-                if (targetWareData ~= nil) and math.abs(targetWareData[key].limitPercentage - sourceWareData[key].limitPercentage) > 0.01 then
-                  newLimit = math.floor(sourceWareData[key].limitPercentage * targetWareData.storageLimit / 100)
-                end
-                debugTrace("Setting " ..
-                  key ..
-                  " limit override for ware " ..
-                  tostring(ware) ..
-                  " on target station to " .. tostring(newLimit) .. " (was " .. tostring(targetWareData and targetWareData[key].limit or 0) .. ")")
-                if key == "buy" then
-                  C.SetContainerBuyLimitOverride(targetEntry.id64, ware, newLimit)
-                else
-                  C.SetContainerSellLimitOverride(targetEntry.id64, ware, newLimit)
-                end
-              end
-              if targetWareData == nil or sourceWareData[key].rule ~= targetWareData[key].rule then
-                local sourceRuleId = sourceWareData[key].rule
-                local targetRuleId = targetWareData and targetWareData[key].rule or 0
-                debugTrace("Setting " ..
-                  key ..
-                  " trade rule for ware " ..
-                  tostring(ware) .. " on target station to " .. tostring(sourceRuleId) .. " (was " .. tostring(targetWareData and targetRuleId or 0) .. ")")
-                if sourceRuleId == sourceData.rules[key] or data.clone.wholeStation and sourceRuleId == sourceData.rules[key] then
-                  debugTrace("Using station default " ..
-                    key .. " trade rule for ware " .. tostring(ware) .. " on " .. tostring(data.clone.wholeStation and "source" or "target") .. " station")
-                  C.SetContainerTradeRule(targetEntry.id64, -1, key, ware, false)
-                else
-                  debugTrace("Enforcing own " .. key .. " trade rule for ware " .. tostring(ware) .. " on target station")
-                  C.SetContainerTradeRule(targetEntry.id64, sourceRuleId, key, ware, true)
-                end
-              end
-            end
-          end
-        end
-      end
-      processedWaresCount = processedWaresCount + 1
-    end
-  end
-  debugTrace("Processed " .. tostring(processedWaresCount) .. " wares for cloning")
-  collectTradeData(targetEntry, true)
+  debugTrace("Applying delete to station: " .. tostring(stationEntry.displayName))
+
+  local stationData = collectTradeData(stationEntry)
+
+  collectTradeData(stationEntry, true)
   reInitData(true)
-  if #skipped > 0 then
-    data.statusMessage = string.format(tostring(texts.statusSavedWithWarnings), processedWaresCount, table.concat(skipped, ", "))
-    data.statusColor = Color["text_warning"]
-  else
-    data.statusMessage = string.format(tostring(texts.statusSuccess), processedWaresCount)
-    data.statusColor = Color["text_success"]
-  end
 end
 
 
@@ -678,7 +546,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   local offerData = wareInfo[offerType]
   local isBuy = (offerType == "buy")
   local editOffer = data.edit.selectedWares[ware.ware] == offerType
-  row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == offerType, { active = readyToSelectWares or data.edit.selectedWares[ware.ware] == offerType })
+  row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == offerType, { active = readyToSelectWares })
   row[1].handlers.onClick = function(_, checked)
     data.edit.selectedWares[ware.ware] = checked and offerType or nil
     if not checked then
@@ -937,33 +805,6 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   end
 end
 
-local function countCloneSelections(data)
-  local count = {
-    full = 0,
-    storage = 0,
-    buy = 0,
-    sell = 0,
-  }
-  if type(data) ~= "table" or type(data.clone) ~= "table" or type(data.clone.wares) ~= "table" then
-    return count
-  end
-  for ware, parts in pairs(data.clone.wares) do
-    if (parts.storage and parts.buy and parts.sell) then
-      count.full = count.full + 1
-    else
-      if parts.storage then
-        count.storage = count.storage + 1
-      end
-      if parts.buy then
-        count.buy = count.buy + 1
-      end
-      if parts.sell then
-        count.sell = count.sell + 1
-      end
-    end
-  end
-  return count
-end
 
 local function setMainTableColumnsWidth(tableHandle)
   local numberWidth = Helper.scaleX(140)
@@ -1063,8 +904,25 @@ local function render()
   setMainTableColumnsWidth(tableContent)
 
   local stationEntry = data.selectedStation and data.stations[data.selectedStation]
-  local selectedCount = 0
   local activeContent = false
+
+  local countSelectedWares = 0
+  local selectedWare = nil
+  local selectedPart = nil
+  if next(data.edit.selectedWares) ~= nil then
+    for ware, part in pairs(data.edit.selectedWares) do
+      if countSelectedWares == 0 then
+        selectedWare = ware
+        selectedPart = part
+      end
+      if part ~= "ware" then
+        countSelectedWares = 0
+        break
+      end
+      countSelectedWares = countSelectedWares + 1
+    end
+  end
+  local stationData = nil
   if stationEntry == nil then
     debugTrace("No stations are selected")
     row = tableContent:addRow(false)
@@ -1072,7 +930,7 @@ local function render()
       { color = Color["text_warning"], halign = "center" })
   else
     debugTrace("Station: " .. tostring(stationEntry.displayName) .. " (" .. tostring(stationEntry.id64) .. ")")
-    local stationData = collectTradeData(stationEntry)
+    stationData = collectTradeData(stationEntry)
     local wareList = getWareList(stationData)
     local readyToSelectWares = stationEntry ~= nil and #wareList > 0 and next(data.edit.selectedWares) == nil
     debugTrace("Processing " .. tostring(#wareList) .. " wares for comparison")
@@ -1108,7 +966,7 @@ local function render()
               activeContent = true
             end
             if (wareType == "trade") then
-              typeRow[1]:createCheckBox(data.edit.selectedType == wareType, { active = readyToSelectWares or data.edit.selectedType == wareType })
+              typeRow[1]:createCheckBox(data.edit.selectedType == wareType, { active = selectedPart == nil or selectedPart == "ware" or data.edit.selectedType == wareType })
               local wType = wareType
               typeRow[1].handlers.onClick = function(_, checked)
                 data.edit.selectedType = checked and wareType or nil
@@ -1150,7 +1008,7 @@ local function render()
           end
           local row = tableContent:addRow(true)
           row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == "ware",
-            { active = readyToSelectWares or data.edit.selectedType == wareType or data.edit.selectedWares[ware.ware] == "ware", })
+            { active = selectedPart == nil or (selectedPart == "ware" and (selectedWare == ware.ware or data.edit.selectedType == wareType or wareType == "trade" )) })
           row[1].handlers.onClick = function(_, checked)
             debugTrace("Set ware " .. tostring(ware.ware) .. " edit to " .. tostring(checked))
             data.edit.selectedWares[ware.ware] = checked and "ware" or nil
@@ -1170,7 +1028,7 @@ local function render()
           row[9]:createText(texts.storage .. ":")
           local storageLimitEdit = false
           local storageLimitOverride = wareInfo.storageLimitOverride
-          if data.edit.selectedType == nil and data.edit.selectedWares[ware.ware] == "ware" then
+          if data.edit.selectedType == nil and data.edit.selectedWares[ware.ware] == "ware" and countSelectedWares <= 1 then
             storageLimitOverride = calculateOverride(data.edit.changed.storageLimitOverride, wareInfo.storageLimitOverride)
             row[10]:createCheckBox(not storageLimitOverride, { active = true })
             row[10].handlers.onClick = function(_, checked)
@@ -1245,8 +1103,8 @@ local function render()
               -- row[2].handlers.onSliderCellDeactivated = function() menu.noupdate = false end
             end
           end
-          renderOffer(tableContent, data, stationEntry.tradeData, ware, "buy", readyToSelectWares, render)
-          renderOffer(tableContent, data, stationEntry.tradeData, ware, "sell", readyToSelectWares, render)
+          renderOffer(tableContent, data, stationEntry.tradeData, ware, "buy", selectedPart == nil or selectedPart == "buy", render)
+          renderOffer(tableContent, data, stationEntry.tradeData, ware, "sell", selectedPart == nil or selectedPart == "sell", render)
         end
         tableContent:addEmptyRow(Helper.standardTextHeight / 2)
       end
@@ -1367,19 +1225,23 @@ local function render()
 
   row = tableBottom:addRow(true, { fixed = true })
 
-  -- row[4]:createButton({ active = selectedCount > 0 and data.clone.confirmed }):setText(texts.cloneButton .. "  \27[widget_arrow_right_01]\27X",
-  --   { halign = "center" })
-  -- row[4].handlers.onClick = function()
-  --   if selectedCount > 0 then
-  --     applyClone(menu, true)
-  --     render()
-  --   end
-  -- end
-  row[6]:createButton({ active = next(data.edit.selectedWares) ~= nil and data.edit.confirmed }):setText(texts.saveButton,
+  local dataIsChanged = data.edit.changed and next(data.edit.changed) ~= nil
+  local selectedWareInfo = selectedWare and stationData and stationData.waresMap[selectedWare]
+  local canBeDeleted = countSelectedWares > 0 and not dataIsChanged and data.edit.confirmed and selectedWareInfo ~= nil and selectedWareInfo.type == "trade"
+  row[4]:createButton({ active = canBeDeleted }):setText(string.format(texts.deleteButton, canBeDeleted and countSelectedWares or 0),
+    { halign = "center" })
+  row[4].handlers.onClick = function()
+    if countSelectedWares > 0 and not dataIsChanged then
+      applyDelete(menu)
+      render()
+    end
+  end
+
+  row[6]:createButton({ active = countSelectedWares == 1 and dataIsChanged and data.edit.confirmed }):setText(texts.saveButton,
     { halign = "center" })
   row[6].handlers.onClick = function()
-    if selectedCount > 0 then
-      applyClone(menu, false)
+    if countSelectedWares == 1 and dataIsChanged then
+      applyChanges(menu)
       render()
     end
   end
@@ -1389,19 +1251,9 @@ local function render()
   end
 
   if data.statusMessage == nil then
-    local selectedWare = nil
-    local selectedPart = nil
-    if next(data.edit.selectedWares) ~= nil then
-      local count = 0
-      for ware, part in pairs(data.edit.selectedWares) do
-        if count == 0 then
-          selectedWare = ware
-          selectedPart = part
-        end
-        count = count + 1
-      end
-      if count > 1 then
-        data.statusMessage = string.format(tostring(texts.statusSelectedForDeletion or ""), tostring(count))
+    if selectedWare ~= nil then
+      if countSelectedWares > 1 then
+        data.statusMessage = string.format(tostring(texts.statusSelectedForDeletion or ""), tostring(countSelectedWares))
         data.statusColor = Color["text_warning"]
       else
         local partText = selectedPart == "ware" and texts.mainPart or (selectedPart == "buy" and texts.buyOffer or texts.sellOffer)

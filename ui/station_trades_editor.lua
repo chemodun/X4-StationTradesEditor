@@ -848,7 +848,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
           readOnly = false,
           hideMaxValue = true,
           forceArrows = true,
-        }):setText(texts.price, { halign = "left", width = Helper.scaleX(120) })
+        }):setText(texts.price, { halign = "left" })
       row[2].handlers.onSliderCellChanged = function(_, value)
         if isBuy then
           data.edit.changed.priceBuy = value
@@ -877,7 +877,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
           readOnly = false,
           hideMaxValue = true,
           forceArrows = true,
-        }):setText(texts.amount, { halign = "left", width = Helper.scaleX(120) })
+        }):setText(texts.amount, { halign = "left" })
       row[2].handlers.onSliderCellChanged = function(_, value)
         if isBuy then
           data.edit.changed.limitBuy = value
@@ -1178,7 +1178,7 @@ local function render()
                   readOnly = false,
                   hideMaxValue = true,
                   forceArrows = true,
-                }):setText(texts.storage, { halign = "left", width = Helper.scaleX(120) })
+                }):setText(texts.storage, { halign = "left" })
               row[2].handlers.onSliderCellChanged = function(_, value)
                 data.edit.changed.storageLimit = value
                 data.edit.confirmed = false

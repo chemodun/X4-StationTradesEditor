@@ -710,6 +710,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       end
       if checked then
         data.edit.slider = nil
+        if isBuy then
+          data.edit.changed.priceBuy = nil
+        else
+          data.edit.changed.priceSell = nil
+        end
       end
       data.edit.confirmed = false
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer price override edit to " .. tostring(checked))
@@ -757,6 +762,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       end
       if checked then
         data.edit.slider = nil
+        if isBuy then
+          data.edit.changed.limitBuy = nil
+        else
+          data.edit.changed.limitSell = nil
+        end
       end
       data.edit.confirmed = false
       data.content.selectedRow = row.index
@@ -804,6 +814,13 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
         data.edit.changed.ruleOverrideSell = not checked
       end
       data.edit.confirmed = false
+      if checked then
+        if isBuy then
+          data.edit.changed.ruleBuy = nil
+        else
+          data.edit.changed.ruleSell = nil
+        end
+      end
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer rule override edit to " .. tostring(checked))
       data.statusMessage = nil
       data.content.selectedRow = row.index
@@ -1158,6 +1175,10 @@ local function render()
             row[10]:createCheckBox(not storageLimitOverride, { active = true })
             row[10].handlers.onClick = function(_, checked)
               data.edit.changed.storageLimitOverride = not checked
+              if checked then
+                data.edit.slider = nil
+                data.edit.changed.storageLimit = nil
+              end
               debugTrace("Set ware " .. tostring(ware.ware) .. " storage limit override new value to " .. tostring(not checked))
               data.edit.confirmed = false
               data.statusMessage = nil

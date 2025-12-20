@@ -686,6 +686,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer edit to " .. tostring(checked))
     data.edit.confirmed = false
     data.statusMessage = nil
+    data.content.selectedRow = row.index
     render()
   end
   row[2]:createText("  " .. (isBuy and texts.buyOffer or texts.sellOffer) .. ":", textCategoryProperties)
@@ -710,6 +711,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       data.edit.confirmed = false
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer price override edit to " .. tostring(checked))
       data.statusMessage = nil
+      data.content.selectedRow = row.index
       render()
     end
     if priceOverride then
@@ -731,6 +733,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       end
       data.edit.confirmed = false
       data.statusMessage = nil
+      data.content.selectedRow = row.index
       render()
     end
   else
@@ -751,6 +754,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
         data.edit.slider = nil
       end
       data.edit.confirmed = false
+      data.content.selectedRow = row.index
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer limit override edit to " .. tostring(checked))
       data.statusMessage = nil
       render()
@@ -776,6 +780,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       end
       data.edit.confirmed = false
       data.statusMessage = nil
+      data.content.selectedRow = row.index
       render()
     end
   else
@@ -795,6 +800,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       data.edit.confirmed = false
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer rule override edit to " .. tostring(checked))
       data.statusMessage = nil
+      data.content.selectedRow = row.index
       render()
     end
     if ruleOverride then
@@ -827,6 +833,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       data.edit.confirmed = false
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer rule edit to " .. tostring(id))
       data.statusMessage = nil
+      data.content.selectedRow = row.index
       render()
     end
   else
@@ -858,6 +865,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
         data.edit.confirmed = false
         debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer price edit to " .. tostring(value))
         data.statusMessage = nil
+        data.content.selectedRow = row.index
         render()
       end
       -- row[2].handlers.onSliderCellActivated = function() menu.noupdate = true end
@@ -887,6 +895,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
         data.edit.confirmed = false
         debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer limit edit to " .. tostring(value))
         data.statusMessage = nil
+        data.content.selectedRow = row.index
         render()
       end
     end
@@ -1093,6 +1102,7 @@ local function render()
                 end
                 data.edit.confirmed = false
                 data.statusMessage = nil
+                data.content.selectedRow = row.index
                 render()
               end
             end
@@ -1115,6 +1125,7 @@ local function render()
               data.edit.slider = nil
               data.edit.changed = {}
             end
+            data.content.selectedRow = row.index
             render()
           end
           row[2]:createText(texts.ware .. ":", textCategoryProperties)
@@ -1131,6 +1142,7 @@ local function render()
               debugTrace("Set ware " .. tostring(ware.ware) .. " storage limit override new value to " .. tostring(not checked))
               data.edit.confirmed = false
               data.statusMessage = nil
+              data.content.selectedRow = row.index
               render()
             end
             if storageLimitOverride then
@@ -1155,6 +1167,7 @@ local function render()
               end
               data.edit.confirmed = false
               data.statusMessage = nil
+              data.content.selectedRow = row.index
               render()
             end
           else
@@ -1184,6 +1197,7 @@ local function render()
                 data.edit.confirmed = false
                 debugTrace("Set ware " .. tostring(ware.ware) .. " storage limit edit to " .. tostring(value))
                 data.statusMessage = nil
+                data.content.selectedRow = row.index
                 render()
               end
               -- row[2].handlers.onSliderCellActivated = function() menu.noupdate = true end
@@ -1204,10 +1218,11 @@ local function render()
     if topRow and topRow > 0 then
       tableContent:setTopRow(topRow)
     end
-    local selectedRow = Helper.currentTableRow[data.content.tableContentId]
+    local selectedRow = data.content.selectedRow or Helper.currentTableRow[data.content.tableContentId]
     if selectedRow ~= nil and selectedRow > 0 then
       tableContent:setSelectedRow(selectedRow)
     end
+    data.content.selectedRow = nil
   end
 
   frame.properties.width = tableTop.properties.width + Helper.borderSize * 2

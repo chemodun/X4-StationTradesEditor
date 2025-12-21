@@ -486,7 +486,7 @@ local function reInitData(editOnly)
   data.waresCountTotal = 0
 end
 
-local function applyChanges(menu, ware)
+local function applyChanges(menu, ware, part)
   local data = menu and menu.contextMenuData or nil
   if not data or not ware then
     return
@@ -513,53 +513,57 @@ local function applyChanges(menu, ware)
     return
   end
 
-  debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName))
-  if changed.storageLimitOverride ~= nil and changed.storageLimitOverride or changed.storageLimit ~= nil then
-    SetContainerStockLimitOverride(stationEntry.id64, ware, changed.storageLimit ~= nil and changed.storageLimit or wareInfo.storageLimit)
-  end
-  if changed.storageLimitOverride ~= nil and not changed.storageLimitOverride then
-    ClearContainerStockLimitOverride(stationEntry.id64, ware)
-  end
+  debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName) .. " for ware: " .. tostring(ware) .. " part: " .. tostring(part))
 
-  if changed.priceOverrideBuy ~= nil and changed.priceOverrideBuy or changed.priceBuy ~= nil then
-    SetContainerWarePriceOverride(stationEntry.id64, ware, true, changed.priceBuy ~= nil and changed.priceBuy or wareInfo.buy.price)
-  end
-  if changed.priceOverrideBuy ~= nil and not changed.priceOverrideBuy then
-    ClearContainerWarePriceOverride(stationEntry.id64, ware, true)
-  end
+  if (part == "ware") then
+    if changed.storageLimitOverride ~= nil and changed.storageLimitOverride or changed.storageLimit ~= nil then
+      SetContainerStockLimitOverride(stationEntry.id64, ware, changed.storageLimit ~= nil and changed.storageLimit or wareInfo.storageLimit)
+    end
+    if changed.storageLimitOverride ~= nil and not changed.storageLimitOverride then
+      ClearContainerStockLimitOverride(stationEntry.id64, ware)
+    end
+  elseif (part == "buy") then
+    if changed.priceOverrideBuy ~= nil and changed.priceOverrideBuy or changed.priceBuy ~= nil then
+      SetContainerWarePriceOverride(stationEntry.id64, ware, true, changed.priceBuy ~= nil and changed.priceBuy or wareInfo.buy.price)
+    end
+    if changed.priceOverrideBuy ~= nil and not changed.priceOverrideBuy then
+      ClearContainerWarePriceOverride(stationEntry.id64, ware, true)
+    end
 
-  if changed.priceOverrideSell ~= nil and changed.priceOverrideSell or changed.priceSell ~= nil then
-    SetContainerWarePriceOverride(stationEntry.id64, ware, false, changed.priceSell ~= nil and changed.priceSell or wareInfo.sell.price)
-  end
-  if changed.priceOverrideSell ~= nil and not changed.priceOverrideSell then
-    ClearContainerWarePriceOverride(stationEntry.id64, ware, false)
-  end
+    if changed.limitOverrideBuy ~= nil and changed.limitOverrideBuy or changed.limitBuy ~= nil then
+      C.SetContainerBuyLimitOverride(stationEntry.id64, ware, changed.limitBuy ~= nil and changed.limitBuy or wareInfo.buy.limit)
+    end
+    if changed.limitOverrideBuy ~= nil and not changed.limitOverrideBuy then
+      C.ClearContainerBuyLimitOverride(stationEntry.id64, ware)
+    end
 
-  if changed.limitOverrideBuy ~= nil and changed.limitOverrideBuy or changed.limitBuy ~= nil then
-    C.SetContainerBuyLimitOverride(stationEntry.id64, ware, changed.limitBuy ~= nil and changed.limitBuy or wareInfo.buy.limit)
-  end
-  if changed.limitOverrideBuy ~= nil and not changed.limitOverrideBuy then
-    C.ClearContainerBuyLimitOverride(stationEntry.id64, ware)
-  end
+    if changed.ruleOverrideBuy ~= nil and changed.ruleOverrideBuy or changed.ruleBuy ~= nil then
+      C.SetContainerTradeRule(stationEntry.id64, changed.ruleBuy ~= nil and changed.ruleBuy or wareInfo.buy.rule, "buy", ware, true)
+    end
+    if changed.ruleOverrideBuy ~= nil and not changed.ruleOverrideBuy then
+      C.SetContainerTradeRule(stationEntry.id64, -1, "buy", ware, false)
+    end
+  elseif (part == "sell") then
+    if changed.priceOverrideSell ~= nil and changed.priceOverrideSell or changed.priceSell ~= nil then
+      SetContainerWarePriceOverride(stationEntry.id64, ware, false, changed.priceSell ~= nil and changed.priceSell or wareInfo.sell.price)
+    end
+    if changed.priceOverrideSell ~= nil and not changed.priceOverrideSell then
+      ClearContainerWarePriceOverride(stationEntry.id64, ware, false)
+    end
 
-  if changed.limitOverrideSell ~= nil and changed.limitOverrideSell or changed.limitSell ~= nil then
-    C.SetContainerSellLimitOverride(stationEntry.id64, ware, changed.limitSell ~= nil and changed.limitSell or wareInfo.sell.limit)
-  end
-  if changed.limitOverrideSell ~= nil and not changed.limitOverrideSell then
-    C.ClearContainerSellLimitOverride(stationEntry.id64, ware)
-  end
+    if changed.limitOverrideSell ~= nil and changed.limitOverrideSell or changed.limitSell ~= nil then
+      C.SetContainerSellLimitOverride(stationEntry.id64, ware, changed.limitSell ~= nil and changed.limitSell or wareInfo.sell.limit)
+    end
+    if changed.limitOverrideSell ~= nil and not changed.limitOverrideSell then
+      C.ClearContainerSellLimitOverride(stationEntry.id64, ware)
+    end
 
-  if changed.ruleOverrideBuy ~= nil and changed.ruleOverrideBuy or changed.ruleBuy ~= nil then
-    C.SetContainerTradeRule(stationEntry.id64, changed.ruleBuy ~= nil and changed.ruleBuy or wareInfo.buy.rule, "buy", ware, true)
-  end
-  if changed.ruleOverrideBuy ~= nil and not changed.ruleOverrideBuy then
-    C.SetContainerTradeRule(stationEntry.id64, -1, "buy", ware, false)
-  end
-  if changed.ruleOverrideSell ~= nil and changed.ruleOverrideSell or changed.ruleSell ~= nil then
-    C.SetContainerTradeRule(stationEntry.id64, changed.ruleSell ~= nil and changed.ruleSell or wareInfo.sell.rule, "sell", ware, true)
-  end
-  if changed.ruleOverrideSell ~= nil and not changed.ruleOverrideSell then
-    C.SetContainerTradeRule(stationEntry.id64, -1, "sell", ware, false)
+    if changed.ruleOverrideSell ~= nil and changed.ruleOverrideSell or changed.ruleSell ~= nil then
+      C.SetContainerTradeRule(stationEntry.id64, changed.ruleSell ~= nil and changed.ruleSell or wareInfo.sell.rule, "sell", ware, true)
+    end
+    if changed.ruleOverrideSell ~= nil and not changed.ruleOverrideSell then
+      C.SetContainerTradeRule(stationEntry.id64, -1, "sell", ware, false)
+    end
   end
 
   data.statusMessage = texts.statusSuccess
@@ -603,7 +607,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   local offerData = wareInfo[offerType]
   local isBuy = (offerType == "buy")
   local editOffer = data.edit.selectedWares[ware.ware] == offerType
-  row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == offerType, { active = readyToSelectWares })
+  row[1]:createCheckBox(editOffer, { active = readyToSelectWares })
   row[1].handlers.onClick = function(_, checked)
     data.edit.selectedWares[ware.ware] = checked and offerType or nil
     if not checked then
@@ -675,7 +679,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       render()
     end
   else
-    row[5]:createText(formatPrice(offerData.price, priceOverride), optionsNumber(priceOverride))
+    if editOffer then
+      row[5]:createText(formatPrice(offerData.price, priceOverride), optionsNumber(priceOverride))
+    else
+      row[5]:createText(formatPrice(offerData.price, offerData.priceOverride), optionsNumber(offerData.priceOverride))
+    end
   end
   row[6]:createText(texts.amount .. ":")
   local limitEdit = false
@@ -733,7 +741,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       render()
     end
   else
-    row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, limitOverride), optionsNumber(limitOverride))
+    if editOffer then
+      row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, limitOverride), optionsNumber(limitOverride))
+    else
+      row[8]:createText(formatNumberWithPercentage(offerData.limit, offerData.limitPercentage, offerData.limitOverride), optionsNumber(offerData.limitOverride))
+    end
   end
   row[9]:createText(texts.rule .. ":")
   local ruleEdit = false
@@ -797,7 +809,11 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       render()
     end
   else
-    row[11]:createText(formatTradeRuleLabel(offerData.rule, ruleOverride, not ruleOverride and offerData.ruleRoot or "station"), optionsRule(ruleOverride))
+    if editOffer then
+      row[11]:createText(formatTradeRuleLabel(offerData.rule, ruleOverride, "station"), optionsRule(ruleOverride))
+    else
+      row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
+    end
   end
   if data.edit.slider ~= nil and data.edit.slider.ware == ware.ware and data.edit.slider.part == offerType then
     local row = tableContent:addRow(true)
@@ -1270,7 +1286,7 @@ local function render()
   tableConfirm:addEmptyRow(Helper.standardTextHeight / 2)
   row = tableConfirm:addRow(true, { fixed = true })
 
-  row[4]:createCheckBox(data.edit.confirmed, { active = next(data.edit.selectedWares) ~= nil })
+  row[4]:createCheckBox(data.edit.confirmed, { active = next(data.edit.selectedWares) ~= nil and data.edit.slider == nil })
   row[4].handlers.onClick = function(_, checked)
     data.edit.confirmed = checked
     debugTrace("Set edit confirmed to " .. tostring(checked))
@@ -1310,7 +1326,7 @@ local function render()
     { halign = "center" })
   row[6].handlers.onClick = function()
     if dataIsChanged then
-      applyChanges(menu, selectedWare)
+      applyChanges(menu, selectedWare, selectedPart)
       render()
     end
   end

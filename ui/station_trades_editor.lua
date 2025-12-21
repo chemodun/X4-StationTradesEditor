@@ -7,6 +7,9 @@ ffi.cdef [[
 
   const char* GetObjectIDCode(UniverseID objectid);
 
+	uint32_t GetNumWares(const char* tags, bool research, const char* licenceownerid, const char* exclusiontags);
+  uint32_t GetWares(const char** result, uint32_t resultlen, const char* tags, bool research, const char* licenceownerid, const char* exclusiontags);
+
 	uint32_t GetNumCargoTransportTypes(UniverseID containerid, bool merge);
   uint32_t GetCargoTransportTypes(StorageInfo* result, uint32_t resultlen, UniverseID containerid, bool merge, bool aftertradeorders);
 
@@ -275,6 +278,27 @@ local function getCargoCapacity(container, transport)
   return capacity
 end
 
+local function collectAvailableToAddWares(entry)
+  if not entry.tradeData then
+    return
+  end
+  local waresMap = entry.tradeData and entry.tradeData.waresMap or {}
+  local cargoCapacities = entry.cargoCapacities or {}
+  local allWares = {}
+  local n = C.GetNumWares("economy", false, "", "")
+  local buf = ffi.new("const char*[?]", n)
+  n = C.GetWares(buf, n, "economy", false, "", "")
+  for i = 0, n - 1 do
+    local ware = ffi.string(buf[i])
+    local name, transport = GetWareData(ware, "name", "transport")
+    if waresMap[ware] == nil and transport and cargoCapacities[transport] and cargoCapacities[transport] > 0 then
+      table.insert(allWares, { ware = ware, name = name })
+    end
+  end
+  table.sort(allWares, Helper.sortName)
+  entry.tradeData.availableToAddWares = allWares
+end
+
 local function collectTradeData(entry, forceRefresh)
   if entry.tradeData and entry.tradeData.waresMap and not forceRefresh then
     return entry.tradeData
@@ -374,6 +398,9 @@ local function collectTradeData(entry, forceRefresh)
     sell = stationSellOwnRule,
   }
   entry.tradeData.waresMap = map
+
+  collectAvailableToAddWares(entry, forceRefresh)
+
   return entry.tradeData
 end
 

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Italian -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Editor Commerci Stazione" descr="Testi per l'Editor Commerci Stazione">
+      <t id="1">Editor Commerci Stazione</t>
+      <t id="2">L'Editor Commerci Stazione permette di visualizzare e modificare tutte le offerte in un'unica tabella.</t>
+      <t id="1001">Editor Commerci Stazione</t>
+      <t id="1011">Stazione</t>
+      <t id="1101">Merce</t>
+      <t id="1102">Allocazione stiva</t>
+      <t id="1103">Regola commerciale</t>
+      <t id="1104">Prezzo</t>
+      <t id="1105">Quantità</t>
+      <t id="1111">Offerta d'acquisto / Offerta di vendita</t>
+      <t id="1121">Risorse</t>
+      <t id="1122">Intermedie</t>
+      <t id="1123">Prodotti</t>
+      <t id="1124">Merci commerciali</t>
+      <t id="1201">Seleziona una stazione per iniziare</t>
+      <t id="1203">Nessuna merce disponibile da gestire</t>
+      <t id="1211">Auto</t>
+      <t id="1212">Nessuna offerta d'acquisto</t>
+      <t id="1213">Nessuna offerta di vendita</t>
+      <t id="1219">Primario</t>
+      <t id="1301">Pagina %d di %d</t>
+      <t id="1401">Conferma prima di salvare</t>
+      <t id="1411">Aggiorna merce</t>
+      <t id="1412">Elimina [ %d ]</t>
+      <t id="1413">Rimuovi offerta</t>
+      <t id="1414">Aggiorna stazione</t>
+      <t id="1415">Accetta</t>
+      <t id="1419">Annulla</t>
+      <t id="1421">Aggiungi merce</t>
+      <t id="2001">Seleziona prima una stazione!</t>
+      <t id="2002">Nessuna merce disponibile da gestire!</t>
+      <t id="2003">Nulla da elaborare. Nessuna modifica effettuata.</t>
+      <t id="2011">Aggiornamento di %s completato con successo.</t>
+      <t id="2021">Eliminate %d merci commerciali.</t>
+      <t id="2031">%s per %s rimosso correttamente.</t>
+      <t id="2101">Per %s è stata selezionata la parte %s da modificare.</t>
+      <t id="2102"> - %s abilitato.</t>
+      <t id="2103"> - %s modificato. Valore precedente: %s, nuovo valore: %s.</t>
+      <t id="2111">Parametri della stazione selezionati per la modifica.</t>
+      <t id="2112"> - Aggiunta la nuova merce %s al commercio.</t>
+      <t id="2121">%d merci selezionate per l'eliminazione.</t>
+    </page>
+  </add>
+</diff>

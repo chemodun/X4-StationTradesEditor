@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- German -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Stationshandelseditor" descr="Texte für den Stationshandelseditor">
+      <t id="1">Stationshandelseditor</t>
+      <t id="2">Der Stationshandelseditor ermöglicht es dir, alle Angebote in einer tabellarischen Ansicht zu sehen und zu bearbeiten.</t>
+      <t id="1001">Stationshandelseditor</t>
+      <t id="1011">Station</t>
+      <t id="1101">Ware</t>
+      <t id="1102">Lagerzuweisung</t>
+      <t id="1103">Handelsregel</t>
+      <t id="1104">Preis</t>
+      <t id="1105">Menge</t>
+      <t id="1111">Kaufangebot / Verkaufsangebot</t>
+      <t id="1121">Ressourcen</t>
+      <t id="1122">Zwischenprodukte</t>
+      <t id="1123">Produkte</t>
+      <t id="1124">Handelswaren</t>
+      <t id="1201">Station auswählen, um zu beginnen</t>
+      <t id="1203">Keine Waren zum Verwalten vorhanden</t>
+      <t id="1211">Auto</t>
+      <t id="1212">Kein Kaufangebot</t>
+      <t id="1213">Kein Verkaufsangebot</t>
+      <t id="1219">Primär</t>
+      <t id="1301">Seite %d von %d</t>
+      <t id="1401">Vor dem Speichern bestätigen</t>
+      <t id="1411">Ware aktualisieren</t>
+      <t id="1412">Löschen [ %d ]</t>
+      <t id="1413">Angebot entfernen</t>
+      <t id="1414">Station aktualisieren</t>
+      <t id="1415">Bestätigen</t>
+      <t id="1419">Abbrechen</t>
+      <t id="1421">Ware hinzufügen</t>
+      <t id="2001">Zuerst eine Station auswählen!</t>
+      <t id="2002">Keine Waren zum Verwalten vorhanden!</t>
+      <t id="2003">Nichts zu verarbeiten. Keine Änderungen vorgenommen.</t>
+      <t id="2011">Aktualisierung von %s erfolgreich abgeschlossen.</t>
+      <t id="2021">%d Handelswaren erfolgreich gelöscht.</t>
+      <t id="2031">%s für %s erfolgreich entfernt.</t>
+      <t id="2101">Für %s wurde %s als zu bearbeitender Teil ausgewählt.</t>
+      <t id="2102"> - %s aktiviert.</t>
+      <t id="2103"> - %s geändert. Alter Wert: %s, neuer Wert: %s.</t>
+      <t id="2111">Stationsparameter zur Bearbeitung ausgewählt.</t>
+      <t id="2112"> - Neue Ware %s zum Handel hinzugefügt.</t>
+      <t id="2121">%d Waren zum Löschen ausgewählt.</t>
+    </page>
+  </add>
+</diff>

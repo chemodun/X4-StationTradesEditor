@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- French -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Éditeur des échanges de station" descr="Textes pour l'Éditeur des échanges de station">
+      <t id="1">Éditeur des échanges de station</t>
+      <t id="2">L'Éditeur des échanges de station vous permet d'afficher et de modifier toutes les offres dans un tableau unique.</t>
+      <t id="1001">Éditeur des échanges de station</t>
+      <t id="1011">Station</t>
+      <t id="1101">Marchandise</t>
+      <t id="1102">Allocation d'espace</t>
+      <t id="1103">Règle commerciale</t>
+      <t id="1104">Prix</t>
+      <t id="1105">Quantité</t>
+      <t id="1111">Offre d'achat / Offre de vente</t>
+      <t id="1121">Ressources</t>
+      <t id="1122">Intermédiaires</t>
+      <t id="1123">Produits</t>
+      <t id="1124">Marchandises commerciales</t>
+      <t id="1201">Sélectionnez une station pour commencer</t>
+      <t id="1203">Aucune marchandise à gérer</t>
+      <t id="1211">Auto</t>
+      <t id="1212">Pas d'offre d'achat</t>
+      <t id="1213">Pas d'offre de vente</t>
+      <t id="1219">Principal</t>
+      <t id="1301">Page %d sur %d</t>
+      <t id="1401">Confirmez avant d'enregistrer</t>
+      <t id="1411">Mettre à jour la marchandise</t>
+      <t id="1412">Supprimer [ %d ]</t>
+      <t id="1413">Retirer l'offre</t>
+      <t id="1414">Mettre à jour la station</t>
+      <t id="1415">Valider</t>
+      <t id="1419">Annuler</t>
+      <t id="1421">Ajouter une marchandise</t>
+      <t id="2001">Sélectionnez d'abord une station !</t>
+      <t id="2002">Aucune marchandise à gérer !</t>
+      <t id="2003">Rien à traiter. Aucun changement effectué.</t>
+      <t id="2011">Mise à jour de %s effectuée avec succès.</t>
+      <t id="2021">%d marchandises commerciales supprimées.</t>
+      <t id="2031">%s pour %s supprimé avec succès.</t>
+      <t id="2101">Pour %s, sélection de %s comme partie à modifier.</t>
+      <t id="2102"> - %s activé.</t>
+      <t id="2103"> - %s modifié. Ancienne valeur : %s, nouvelle valeur : %s.</t>
+      <t id="2111">Paramètres de station sélectionnés pour modification.</t>
+      <t id="2112"> - Nouvelle marchandise %s ajoutée au commerce.</t>
+      <t id="2121">%d marchandises sélectionnées pour suppression.</t>
+    </page>
+  </add>
+</diff>

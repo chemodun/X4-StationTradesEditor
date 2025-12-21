@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Portuguese -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Editor de Ofertas da Estação" descr="Textos do Editor de Ofertas da Estação">
+      <t id="1">Editor de Ofertas da Estação</t>
+      <t id="2">O Editor de Ofertas da Estação permite visualizar e editar todas as ofertas em uma única tabela.</t>
+      <t id="1001">Editor de Ofertas da Estação</t>
+      <t id="1011">Estação</t>
+      <t id="1101">Mercadoria</t>
+      <t id="1102">Alocação de armazenamento</t>
+      <t id="1103">Regra comercial</t>
+      <t id="1104">Preço</t>
+      <t id="1105">Quantidade</t>
+      <t id="1111">Oferta de compra / Oferta de venda</t>
+      <t id="1121">Recursos</t>
+      <t id="1122">Intermediários</t>
+      <t id="1123">Produtos</t>
+      <t id="1124">Mercadorias comerciais</t>
+      <t id="1201">Selecione uma estação para começar</t>
+      <t id="1203">Nenhuma mercadoria disponível para gerenciar</t>
+      <t id="1211">Auto</t>
+      <t id="1212">Sem oferta de compra</t>
+      <t id="1213">Sem oferta de venda</t>
+      <t id="1219">Primário</t>
+      <t id="1301">Página %d de %d</t>
+      <t id="1401">Confirme antes de salvar</t>
+      <t id="1411">Atualizar mercadoria</t>
+      <t id="1412">Excluir [ %d ]</t>
+      <t id="1413">Remover oferta</t>
+      <t id="1414">Atualizar estação</t>
+      <t id="1415">Aceitar</t>
+      <t id="1419">Cancelar</t>
+      <t id="1421">Adicionar mercadoria</t>
+      <t id="2001">Selecione uma estação primeiro!</t>
+      <t id="2002">Nenhuma mercadoria disponível para gerenciar!</t>
+      <t id="2003">Nada para processar. Nenhuma alteração feita.</t>
+      <t id="2011">Atualização de %s concluída com sucesso.</t>
+      <t id="2021">%d mercadorias comerciais excluídas com sucesso.</t>
+      <t id="2031">%s para %s removido com sucesso.</t>
+      <t id="2101">Para %s, selecionado %s como parte para editar.</t>
+      <t id="2102"> - %s habilitado.</t>
+      <t id="2103"> - %s alterado. Valor antigo: %s, novo valor: %s.</t>
+      <t id="2111">Parâmetros da estação selecionados para edição.</t>
+      <t id="2112"> - Nova mercadoria %s adicionada ao comércio.</t>
+      <t id="2121">%d mercadorias selecionadas para exclusão.</t>
+    </page>
+  </add>
+</diff>

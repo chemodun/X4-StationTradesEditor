@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Turkish -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="İstasyon Ticaret Düzenleyicisi" descr="İstasyon Ticaret Düzenleyicisi metni">
+      <t id="1">İstasyon Ticaret Düzenleyicisi</t>
+      <t id="2">İstasyon Ticaret Düzenleyicisi tüm işlemleri tek bir tabloda görmenizi ve düzenlemenizi sağlar.</t>
+      <t id="1001">İstasyon Ticaret Düzenleyicisi</t>
+      <t id="1011">İstasyon</t>
+      <t id="1101">Mal</t>
+      <t id="1102">Depo tahsisi</t>
+      <t id="1103">Ticaret kuralı</t>
+      <t id="1104">Fiyat</t>
+      <t id="1105">Miktar</t>
+      <t id="1111">Alım teklifi / Satım teklifi</t>
+      <t id="1121">Kaynaklar</t>
+      <t id="1122">Ara ürünler</t>
+      <t id="1123">Ürünler</t>
+      <t id="1124">Ticaret malları</t>
+      <t id="1201">Başlamak için bir istasyon seçin</t>
+      <t id="1203">Yönetilecek mal yok</t>
+      <t id="1211">Oto</t>
+      <t id="1212">Alım teklifi yok</t>
+      <t id="1213">Satım teklifi yok</t>
+      <t id="1219">Birincil</t>
+      <t id="1301">%d / %d sayfa</t>
+      <t id="1401">Kaydetmeden önce onaylayın</t>
+      <t id="1411">Malı güncelle</t>
+      <t id="1412">Sil [ %d ]</t>
+      <t id="1413">Teklifi kaldır</t>
+      <t id="1414">İstasyonu güncelle</t>
+      <t id="1415">Kabul et</t>
+      <t id="1419">İptal</t>
+      <t id="1421">Mal ekle</t>
+      <t id="2001">Önce bir istasyon seçin!</t>
+      <t id="2002">Yönetilecek mal yok!</t>
+      <t id="2003">İşlenecek bir şey yok. Değişiklik yapılmadı.</t>
+      <t id="2011">%s güncellemesi başarıyla tamamlandı.</t>
+      <t id="2021">%d ticaret malı başarıyla silindi.</t>
+      <t id="2031">%s için %s başarıyla kaldırıldı.</t>
+      <t id="2101">%s için düzenlenecek bölüm olarak %s seçildi.</t>
+      <t id="2102"> - %s etkinleştirildi.</t>
+      <t id="2103"> - %s değiştirildi. Eski değer: %s, yeni değer: %s.</t>
+      <t id="2111">Düzenleme için istasyon parametreleri seçildi.</t>
+      <t id="2112"> - Ticarete yeni %s malı eklendi.</t>
+      <t id="2121">Silmek üzere %d mal seçildi.</t>
+    </page>
+  </add>
+</diff>

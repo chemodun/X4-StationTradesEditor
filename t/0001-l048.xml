@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Polish -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Edytor Handlu Stacji" descr="Teksty Edytora Handlu Stacji">
+      <t id="1">Edytor Handlu Stacji</t>
+      <t id="2">Edytor Handlu Stacji pozwala przeglądać i edytować wszystkie oferty w jednym widoku tabelarycznym.</t>
+      <t id="1001">Edytor Handlu Stacji</t>
+      <t id="1011">Stacja</t>
+      <t id="1101">Towar</t>
+      <t id="1102">Przydział magazynu</t>
+      <t id="1103">Reguła handlowa</t>
+      <t id="1104">Cena</t>
+      <t id="1105">Ilość</t>
+      <t id="1111">Oferta kupna / Oferta sprzedaży</t>
+      <t id="1121">Surowce</t>
+      <t id="1122">Półprodukty</t>
+      <t id="1123">Produkty</t>
+      <t id="1124">Towary handlowe</t>
+      <t id="1201">Wybierz stację, aby rozpocząć</t>
+      <t id="1203">Brak towarów do zarządzania</t>
+      <t id="1211">Auto</t>
+      <t id="1212">Brak oferty kupna</t>
+      <t id="1213">Brak oferty sprzedaży</t>
+      <t id="1219">Podstawowy</t>
+      <t id="1301">Strona %d z %d</t>
+      <t id="1401">Potwierdź przed zapisaniem</t>
+      <t id="1411">Aktualizuj towar</t>
+      <t id="1412">Usuń [ %d ]</t>
+      <t id="1413">Usuń ofertę</t>
+      <t id="1414">Aktualizuj stację</t>
+      <t id="1415">Zatwierdź</t>
+      <t id="1419">Anuluj</t>
+      <t id="1421">Dodaj towar</t>
+      <t id="2001">Najpierw wybierz stację!</t>
+      <t id="2002">Brak towarów do zarządzania!</t>
+      <t id="2003">Brak danych do przetworzenia. Nie wprowadzono zmian.</t>
+      <t id="2011">Aktualizacja %s zakończona powodzeniem.</t>
+      <t id="2021">Pomyślnie usunięto %d towarów handlowych.</t>
+      <t id="2031">%s dla %s pomyślnie usunięto.</t>
+      <t id="2101">Dla %s wybrano %s jako część informacji do edycji.</t>
+      <t id="2102"> - %s włączono.</t>
+      <t id="2103"> - Zmieniono %s. Poprzednia wartość: %s, nowa wartość: %s.</t>
+      <t id="2111">Parametry stacji wybrane do edycji.</t>
+      <t id="2112"> - Dodano nowy towar %s do handlu.</t>
+      <t id="2121">Wybrano %d towarów do usunięcia.</t>
+    </page>
+  </add>
+</diff>

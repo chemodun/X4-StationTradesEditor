@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Czech -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Editor obchodů stanice" descr="Texty pro Editor obchodů stanice">
+      <t id="1">Editor obchodů stanice</t>
+      <t id="2">Editor obchodů stanice vám umožní zobrazit a upravovat všechny nabídky v jedné tabulce.</t>
+      <t id="1001">Editor obchodů stanice</t>
+      <t id="1011">Stanice</t>
+      <t id="1101">Zboží</t>
+      <t id="1102">Přidělení skladu</t>
+      <t id="1103">Obchodní pravidlo</t>
+      <t id="1104">Cena</t>
+      <t id="1105">Množství</t>
+      <t id="1111">Nabídka koupě / Prodejní nabídka</t>
+      <t id="1121">Suroviny</t>
+      <t id="1122">Meziprodukty</t>
+      <t id="1123">Produkty</t>
+      <t id="1124">Obchodované zboží</t>
+      <t id="1201">Vyberte stanici pro zahájení</t>
+      <t id="1203">Žádné zboží ke správě</t>
+      <t id="1211">Auto</t>
+      <t id="1212">Žádná nabídka koupě</t>
+      <t id="1213">Žádná prodejní nabídka</t>
+      <t id="1219">Primární</t>
+      <t id="1301">Strana %d z %d</t>
+      <t id="1401">Před uložením potvrďte</t>
+      <t id="1411">Aktualizovat zboží</t>
+      <t id="1412">Smazat [ %d ]</t>
+      <t id="1413">Odebrat nabídku</t>
+      <t id="1414">Aktualizovat stanici</t>
+      <t id="1415">Potvrdit</t>
+      <t id="1419">Zrušit</t>
+      <t id="1421">Přidat zboží</t>
+      <t id="2001">Nejprve vyberte stanici!</t>
+      <t id="2002">Žádné zboží ke správě!</t>
+      <t id="2003">Není co zpracovat. Nebyly provedeny žádné změny.</t>
+      <t id="2011">Aktualizace %s úspěšně dokončena.</t>
+      <t id="2021">Úspěšně odstraněno %d obchodovaných zboží.</t>
+      <t id="2031">%s pro %s úspěšně odstraněno.</t>
+      <t id="2101">Pro %s vybrána %s jako část k úpravě.</t>
+      <t id="2102"> - %s povoleno.</t>
+      <t id="2103"> - Změněno %s. Původní hodnota: %s, nová hodnota: %s.</t>
+      <t id="2111">Parametry stanice vybrány k úpravě.</t>
+      <t id="2112"> - Přidáno nové zboží %s k obchodu.</t>
+      <t id="2121">Vybráno %d zboží k odstranění.</t>
+    </page>
+  </add>
+</diff>

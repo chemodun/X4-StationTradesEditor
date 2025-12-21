@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English -->
+<diff>
+  <add sel="/language">
+    <page id="1972092410" voice="no" title="Station Trades Editor" descr="Text for Station Trades Editor">
+      <t id="1">Station Trades Editor</t>
+      <t id="2">Station Trades Editor allows you to view and edit all trades in one place presented as a table.</t>
+      <t id="1001">Station Trades Editor</t>
+      <t id="1011">Station</t>
+      <t id="1101">Ware</t>
+      <t id="1102">Storage Allocation</t>
+      <t id="1103">Trade Rule</t>
+      <t id="1104">Price</t>
+      <t id="1105">Amount</t>
+      <t id="1111">Buy Offer / Sell Offer</t>
+      <t id="1121">Resources</t>
+      <t id="1122">Intermediates</t>
+      <t id="1123">Products</t>
+      <t id="1124">Trade Wares</t>
+      <t id="1201">Select Station to begin</t>
+      <t id="1203">No wares available for managing</t>
+      <t id="1211">Auto</t>
+      <t id="1212">No Buy Offer</t>
+      <t id="1213">No Sell Offer</t>
+      <t id="1219">Primary</t>
+      <t id="1301">Page %d of %d</t>
+      <t id="1401">Confirm before proceeding with saving</t>
+      <t id="1411">Update ware</t>
+      <t id="1412">Delete [ %d ]</t>
+      <t id="1413">Remove offer</t>
+      <t id="1414">Update Station</t>
+      <t id="1415">Accept</t>
+      <t id="1419">Cancel</t>
+      <t id="1421">Add ware</t>
+      <t id="2001">Select Station first!</t>
+      <t id="2002">No wares available for managing!</t>
+      <t id="2003">Nothing to process. No changes made.</t>
+      <t id="2011">Update of %s completed successfully.</t>
+      <t id="2021">Deleted %d trade wares successfully.</t>
+      <t id="2031">%s for %s successfully removed.</t>
+      <t id="2101">For %s selected %s part of info for edit.</t>
+      <t id="2102"> - %s enabled.</t>
+      <t id="2103"> - Changed %s. Old value: %s, New value: %s.</t>
+      <t id="2111">Station parameters selected for edit.</t>
+      <t id="2112"> - Added new ware %s for trade.</t>
+      <t id="2121">Selected %d wares for deletion.</t>
+    </page>
+  </add>
+</diff>

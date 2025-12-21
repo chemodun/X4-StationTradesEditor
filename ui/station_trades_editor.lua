@@ -50,6 +50,9 @@ local texts = {
   ware = ReadText(1972092410, 1101),
   storage = ReadText(1972092410, 1102),
   rule = ReadText(1972092410, 1103),
+  tradeRules = ReadText(1001, 11010),
+  stationSupply = ReadText(1001, 11018),
+  stationTrades = ReadText(1001, 11017),
   price = ReadText(1972092410, 1104),
   priceSuffix = ReadText(1001, 101),
   amount = ReadText(1972092410, 1105),
@@ -68,6 +71,7 @@ local texts = {
   pageInfo = ReadText(1972092410, 1301),
   confirmSave = ReadText(1972092410, 1401),
   updateWareButton = ReadText(1972092410, 1411),
+  updateStationButton = "Update Station", --ReadText(1972092410, 1414),
   deleteWareButton = ReadText(1972092410, 1412),
   removeOfferButton = ReadText(1972092410, 1413),
   cancelButton = ReadText(1972092410, 1419),
@@ -83,6 +87,7 @@ local texts = {
   statusSelectedWareInfo = ReadText(1972092410, 2101),
   statusChangedValue = ReadText(1972092410, 2103),
   statusTradeOfferEnabled = ReadText(1972092410, 2102),
+  statusSelectedStationInfo = "Station parameters selected for edit" --ReadText(1972092410, 2104),
 }
 
 
@@ -104,6 +109,7 @@ local wareTypeSortOrder = {
 }
 
 local tradeRuleNames = nil
+local tradeRuleDefault = nil
 
 local function copyAndEnrichTable(src, extraInfo)
   local dest = {}
@@ -259,6 +265,9 @@ local function ensureTradeRuleNames()
   if type(Helper.traderuleOptions) == "table" then
     for _, option in ipairs(Helper.traderuleOptions) do
       mapping[option.id] = option.text
+      if C.IsPlayerTradeRuleDefault(option.id, "buy") and C.IsPlayerTradeRuleDefault(option.id, "sell") then
+        tradeRuleDefault = option.id
+      end
     end
   end
   tradeRuleNames = mapping
@@ -419,6 +428,23 @@ local function formatTradeRuleLabel(id, hasOwn, root)
   return label
 end
 
+
+local function stationTradeRuleDropdownOptions()
+  ensureTradeRuleNames()
+  local options = {}
+  if tradeRuleNames and #tradeRuleNames > 0 then
+    for ruleId, ruleName in pairs(tradeRuleNames) do
+      local displayName = ruleName
+      local area = ""
+      if C.IsPlayerTradeRuleDefault(ruleId, "buy") and C.IsPlayerTradeRuleDefault(ruleId, "sell") then
+        area = tradeRulesRoots["global"]
+      end
+      options[#options + 1] = { id = ruleId, icon = "", text = displayName, text2 = area, displayremoveoption = false }
+    end
+  end
+  return options
+end
+
 local function tradeRulesDropdownOptions(isBuy, tradeData)
   ensureTradeRuleNames()
   local options = {}
@@ -514,11 +540,34 @@ local function reInitData(editOnly)
     return
   end
   data.content = {}
+  data.top = {}
   data.waresStartIndex = 1
   data.waresCountTotal = 0
 end
 
-local function showChangesInStatus(data, stationEntry, wareInfo)
+
+local function calculateOverride(overrideFromEdit, currentOverride)
+  if overrideFromEdit == nil then
+    return currentOverride
+  end
+  return overrideFromEdit
+end
+
+local function showChangesInStatus(data, stationEntry, tradeData, wareInfo)
+
+  if data.edit.changed.ruleTrade or data.edit.changed.ruleTradeOverride ~= nil then
+    local isOverride = tradeData.rulesOverride.buy or tradeData.rulesOverride.sell
+    local oldValue = formatTradeRuleLabel(tradeData.rules.buy, isOverride, "global")
+    isOverride = calculateOverride(data.edit.changed.ruleTradeOverride, isOverride)
+    local newValue = formatTradeRuleLabel(data.edit.changed.ruleTrade or tradeData.rules.buy,
+      isOverride, "global")
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.station .. " " .. texts.stationTrades, oldValue, newValue)
+    end
+  end
+  if wareInfo == nil or next(wareInfo) == nil then
+    return
+  end
   if data.edit.changed.storageLimit or data.edit.changed.storageLimitOverride ~= nil then
     local oldValue = formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride)
     local newValue = formatNumberWithPercentage(data.edit.changed.storageLimit or wareInfo.storageLimit,
@@ -567,14 +616,14 @@ local function showChangesInStatus(data, stationEntry, wareInfo)
   if data.edit.changed.ruleBuy or data.edit.changed.ruleOverrideBuy ~= nil then
     local oldValue = formatTradeRuleLabel(wareInfo.buy.rule, wareInfo.buy.ruleOverride, wareInfo.buy.ruleRoot)
     local newValue = formatTradeRuleLabel(data.edit.changed.ruleBuy or wareInfo.buy.rule,
-      data.edit.changed.ruleOverrideBuy, wareInfo.buy.ruleRoot)
+      data.edit.changed.ruleOverrideBuy, "station")
     if oldValue ~= newValue then
       data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.rule, oldValue, newValue)
     end
   elseif data.edit.changed.ruleSell or data.edit.changed.ruleOverrideSell ~= nil then
     local oldValue = formatTradeRuleLabel(wareInfo.sell.rule, wareInfo.sell.ruleOverride, wareInfo.sell.ruleRoot)
     local newValue = formatTradeRuleLabel(data.edit.changed.ruleSell or wareInfo.sell.rule,
-      data.edit.changed.ruleOverrideSell, wareInfo.sell.ruleRoot)
+      data.edit.changed.ruleOverrideSell, "station")
     if oldValue ~= newValue then
       data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.rule, oldValue, newValue)
     end
@@ -611,7 +660,7 @@ local function applyChanges(menu, ware, part)
   debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName) .. " for ware: " .. tostring(ware) .. " part: " .. tostring(part))
 
   data.statusMessage = string.format(texts.statusUpdateSuccess, wareInfo.name)
-  showChangesInStatus(data, stationEntry, wareInfo)
+  showChangesInStatus(data, stationEntry, tradeData, wareInfo)
   data.statusColor = Color["text_success"]
 
   if (part == "ware") then
@@ -675,6 +724,47 @@ local function applyChanges(menu, ware, part)
     if changed.ruleOverrideSell ~= nil and not changed.ruleOverrideSell then
       C.SetContainerTradeRule(stationEntry.id64, -1, "sell", ware, false)
     end
+  end
+
+  collectTradeData(stationEntry, true)
+  reInitData(true)
+end
+
+
+local function applyStationChanges(menu)
+  local data = menu and menu.contextMenuData or nil
+  if not data then
+    return
+  end
+  local stationEntry = data.selectedStation and data.stations[data.selectedStation]
+  if not stationEntry then
+    data.statusMessage = texts.statusNoStationSelected
+    data.statusColor = Color["text_warning"]
+    return
+  end
+
+  if data.edit.changed == nil or next(data.edit.changed) == nil then
+    data.statusMessage = texts.statusNothingToProcess
+    data.statusColor = Color["text_warning"]
+    return
+  end
+
+  local changed = data.edit.changed
+  local tradeData = collectTradeData(stationEntry)
+
+  debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName) .. " for params")
+
+  data.statusMessage = string.format(texts.statusUpdateSuccess, stationEntry.displayName)
+  showChangesInStatus(data, stationEntry, tradeData, {})
+  data.statusColor = Color["text_success"]
+
+  if changed.ruleTradeOverride ~= nil and changed.ruleTradeOverride or changed.ruleTrade ~= nil then
+    C.SetContainerTradeRule(stationEntry.id64, changed.ruleTrade ~= nil and changed.ruleTrade or tradeData.rules.buy, "buy", "", true)
+    C.SetContainerTradeRule(stationEntry.id64, changed.ruleTrade ~= nil and changed.ruleTrade or tradeData.rules.sell, "sell", "", true)
+  end
+  if changed.ruleTradeOverride ~= nil and not changed.ruleTradeOverride then
+    C.SetContainerTradeRule(stationEntry.id64, -1, "buy", "", false)
+    C.SetContainerTradeRule(stationEntry.id64, -1, "sell", "", false)
   end
 
   collectTradeData(stationEntry, true)
@@ -761,14 +851,6 @@ local function applyDelete(menu)
 
   collectTradeData(stationEntry, true)
   reInitData(true)
-end
-
-
-local function calculateOverride(overrideFromEdit, currentOverride)
-  if overrideFromEdit == nil then
-    return currentOverride
-  end
-  return overrideFromEdit
 end
 
 local function renderOffer(tableContent, data, tradeData, ware, offerType, readyToSelectWares, render)
@@ -923,12 +1005,14 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   end
   row[9]:createText(texts.rule .. ":")
   local ruleEdit = false
+  local ruleOverride = false
+  if isBuy then
+    ruleOverride = calculateOverride(data.edit.changed.ruleOverrideBuy, offerData.ruleOverride)
+  else
+    ruleOverride = calculateOverride(data.edit.changed.ruleOverrideSell, offerData.ruleOverride)
+  end
   if editOffer then
-    if isBuy then
-      ruleOverride = calculateOverride(data.edit.changed.ruleOverrideBuy, offerData.ruleOverride)
-    else
-      ruleOverride = calculateOverride(data.edit.changed.ruleOverrideSell, offerData.ruleOverride)
-    end
+
     row[10]:createCheckBox(not ruleOverride, { active = true })
     row[10].handlers.onClick = function(_, checked)
       if isBuy then
@@ -939,9 +1023,9 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       data.edit.confirmed = false
       if checked then
         if isBuy then
-          data.edit.changed.ruleBuy = nil
+          data.edit.changed.ruleBuy = tradeData.rules.buy
         else
-          data.edit.changed.ruleSell = nil
+          data.edit.changed.ruleSell = tradeData.rules.sell
         end
       end
       debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer rule override edit to " .. tostring(checked))
@@ -955,15 +1039,15 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   else
     row[10]:createText(overrideIcons[offerData.ruleOverride], overrideIconsTextProperties[offerData.ruleOverride])
   end
+  local effectiveRule = isBuy and (data.edit.changed.ruleBuy or offerData.rule) or (data.edit.changed.ruleSell or offerData.rule)
   if ruleEdit then
     local tradeRuleOptions = tradeRulesDropdownOptions(isBuy, tradeData)
-    local startOption = isBuy and (data.edit.changed.ruleBuy or offerData.rule) or (data.edit.changed.ruleSell or offerData.rule)
     debugTrace("Rendering trade rule DropDown with " ..
       tostring(#tradeRuleOptions) .. " options for ware " .. tostring(ware.ware) .. " " .. offerType .. " offer")
     row[11]:createDropDown(
       tradeRuleOptions,
       {
-        startOption = startOption or -1,
+        startOption = effectiveRule or -1,
         active = true,
         textOverride = (#tradeRuleOptions == 0) and "No trade rules" or nil,
       }
@@ -984,7 +1068,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     end
   else
     if editOffer then
-      row[11]:createText(formatTradeRuleLabel(offerData.rule, ruleOverride, "station"), optionsRule(ruleOverride))
+      row[11]:createText(formatTradeRuleLabel(effectiveRule, ruleOverride, "station"), optionsRule(ruleOverride))
     else
       row[11]:createText(formatTradeRuleLabel(offerData.rule, offerData.ruleOverride, offerData.ruleRoot), optionsRule(offerData.ruleOverride))
     end
@@ -1064,9 +1148,79 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
   end
 end
 
+local function renderStationParams(tableContent, data, tradeData, render)
+  local row = tableContent:addRow(true)
+  local editStationParams = data.edit and data.editStationParams or false
+  row[1]:createCheckBox(editStationParams, { active = true })
+  row[1].handlers.onClick = function(_, checked)
+    data.editStationParams = checked
+    if not checked then
+      data.edit.slider = nil
+      data.edit.changed = {}
+    end
+    debugTrace("Set station params edit to " .. tostring(checked))
+    data.edit.confirmed = false
+    data.statusMessage = nil
+    data.content.tableTopSelectedRow = row.index
+    render()
+  end
+  row[2]:createText(texts.tradeRules .. ":", textCategoryProperties)
+  row[3]:createText(texts.stationTrades .. ":")
+  local ruleTradeEdit = false
+  local ruleTradeOverride = tradeData.rulesOverride.buy or tradeData.rulesOverride.sell
+  if editStationParams then
+    ruleTradeOverride = calculateOverride(data.edit.changed.ruleTradeOverride, ruleTradeOverride)
+    row[4]:createCheckBox(not ruleTradeOverride, { active = true })
+    row[4].handlers.onClick = function(_, checked)
+      data.edit.changed.ruleTradeOverride = not checked
+      data.edit.confirmed = false
+      if checked then
+        data.edit.changed.ruleTrade = tradeRuleDefault
+      end
+      debugTrace("Set fro station trade rule override edit to " .. tostring(checked))
+      data.statusMessage = nil
+      data.content.tableTopSelectedRow = row.index
+      render()
+    end
+    if ruleTradeOverride then
+      ruleTradeEdit = true
+    end
+  else
+    row[4]:createText(overrideIcons[ruleTradeOverride], overrideIconsTextProperties[ruleTradeOverride])
+  end
+  local effectiveTradeRule = data.edit.changed.ruleTrade ~= nil and data.edit.changed.ruleTrade or tradeData.rules.buy
+  if ruleTradeEdit then
+    local tradeRuleOptions = stationTradeRuleDropdownOptions()
+    debugTrace("Rendering trade rule DropDown with " .. tostring(#tradeRuleOptions) .. " options for station")
+    row[5]:createDropDown(
+      tradeRuleOptions,
+      {
+        startOption = effectiveTradeRule or -1,
+        active = true,
+        textOverride = (#tradeRuleOptions == 0) and "No trade rules" or nil,
+      }
+    )
+    row[5]:setTextProperties({ halign = "left" })
+    row[5]:setText2Properties({ halign = "right", color = Color["text_positive"] })
+    row[5].handlers.onDropDownConfirmed = function(_, id)
+      data.edit.changed.ruleTrade = tonumber(id)
+      data.edit.confirmed = false
+      debugTrace("Set to station trade rule edit to " .. tostring(id))
+      data.statusMessage = nil
+      data.content.tableTopSelectedRow = row.index
+      render()
+    end
+  else
+    if editStationParams then
+      row[5]:createText(formatTradeRuleLabel(effectiveTradeRule, ruleTradeOverride, "global"), optionsRule(ruleTradeOverride))
+    else
+      row[5]:createText(formatTradeRuleLabel(tradeData.rules.buy, ruleTradeOverride, "global"), optionsRule(ruleTradeOverride))
+    end
+  end
+end
 
 local function setMainTableColumnsWidth(tableHandle)
-  local numberWidth = Helper.scaleX(140)
+  local numberWidth = Helper.scaleX(180)
   local titleWidth = Helper.scaleX(80)
   local nameWidth = Helper.scaleX(120)
   local textWidth = Helper.scaleX(240)
@@ -1083,9 +1237,6 @@ local function setMainTableColumnsWidth(tableHandle)
       columnWidth = checkboxSize
     else
       columnWidth = numberWidth
-      if i == 6 then
-        columnWidth = math.floor(columnWidth * 1.5)
-      end
       if i == 9 then
         columnWidth = textWidth
       end
@@ -1153,6 +1304,22 @@ local function render()
     render()
   end
 
+  local stationEntry = data.selectedStation and data.stations[data.selectedStation] or nil
+  debugTrace("Station: " .. tostring(stationEntry and stationEntry.displayName or "") .. " (" .. tostring(stationEntry and stationEntry.id64 or "") .. ")")
+  local stationData = stationEntry and collectTradeData(stationEntry) or {}
+
+  tableTop:addEmptyRow(Helper.standardTextHeight / 2, { fixed = true })
+
+  renderStationParams(tableTop, data, stationData, render)
+  if data.content and data.content.tableTopId then
+    local selectedRow = data.content.tableTopSelectedRow or Helper.currentTableRow[data.content.tableTopId]
+    if selectedRow ~= nil and selectedRow > 0 then
+      tableTop:setSelectedRow(selectedRow)
+    end
+    data.content.tableTopSelectedRow = nil
+  end
+
+
   tableTop:addEmptyRow(Helper.standardTextHeight / 2, { fixed = true })
 
   currentY = currentY + tableTop:getFullHeight() + Helper.borderSize * 2
@@ -1162,13 +1329,14 @@ local function render()
     { tabOrder = currentTableNum, reserveScrollBar = true, highlightMode = "on", x = Helper.borderSize, y = currentY, })
   setMainTableColumnsWidth(tableContent)
 
-  local stationEntry = data.selectedStation and data.stations[data.selectedStation]
-  local activeContent = false
-
   local countSelectedWares = 0
   local selectedWare = nil
   local selectedPart = nil
-  if next(data.edit.selectedWares) ~= nil then
+
+  local isStationEdit = data.edit and data.editStationParams or false
+  local dataIsChanged = data.edit.changed and next(data.edit.changed) ~= nil
+  local waresSelected = data.edit.selectedWares and next(data.edit.selectedWares) ~= nil
+  if waresSelected then
     for ware, part in pairs(data.edit.selectedWares) do
       if countSelectedWares == 0 then
         selectedWare = ware
@@ -1181,17 +1349,13 @@ local function render()
       countSelectedWares = countSelectedWares + 1
     end
   end
-  local stationData = nil
   if stationEntry == nil then
     debugTrace("No stations are selected")
     row = tableContent:addRow(false)
     row[2]:setColSpan(columns - 1):createText(texts.selectStationPrompt,
       { color = Color["text_warning"], halign = "center" })
   else
-    debugTrace("Station: " .. tostring(stationEntry.displayName) .. " (" .. tostring(stationEntry.id64) .. ")")
-    stationData = collectTradeData(stationEntry)
     local wareList = getWareList(stationData)
-    local readyToSelectWares = stationEntry ~= nil and #wareList > 0 and next(data.edit.selectedWares) == nil
     debugTrace("Processing " .. tostring(#wareList) .. " wares for comparison")
     local wareType = nil
     if #wareList == 0 then
@@ -1221,11 +1385,8 @@ local function render()
           if wareType ~= wareInfo.type then
             wareType = wareInfo.type
             local typeRow = tableContent:addRow(true, { bgColor = Color["row_background_unselectable"] })
-            if not activeContent then
-              activeContent = true
-            end
             if (wareType == "trade") then
-              typeRow[1]:createCheckBox(data.edit.selectedType == wareType, { active = selectedPart == nil or selectedPart == "ware" or data.edit.selectedType == wareType })
+              typeRow[1]:createCheckBox(data.edit.selectedType == wareType, { active = not isStationEdit and (selectedPart == nil or selectedPart == "ware" or data.edit.selectedType == wareType) })
               local wType = wareType
               typeRow[1].handlers.onClick = function(_, checked)
                 data.edit.selectedType = checked and wareType or nil
@@ -1267,7 +1428,7 @@ local function render()
           end
           local row = tableContent:addRow(true)
           row[1]:createCheckBox(data.edit.selectedWares[ware.ware] == "ware",
-            { active = selectedPart == nil or (selectedPart == "ware" and (selectedWare == ware.ware or data.edit.selectedType == wareType or wareType == "trade" )) })
+            { active = not isStationEdit and (selectedPart == nil or (selectedPart == "ware" and (selectedWare == ware.ware or data.edit.selectedType == wareType or wareType == "trade"))) })
           row[1].handlers.onClick = function(_, checked)
             debugTrace("Set ware " .. tostring(ware.ware) .. " edit to " .. tostring(checked))
             data.edit.selectedWares[ware.ware] = checked and "ware" or nil
@@ -1362,8 +1523,8 @@ local function render()
               -- row[2].handlers.onSliderCellDeactivated = function() menu.noupdate = false end
             end
           end
-          renderOffer(tableContent, data, stationEntry.tradeData, ware, "buy", selectedPart == nil or selectedPart == "buy", render)
-          renderOffer(tableContent, data, stationEntry.tradeData, ware, "sell", selectedPart == nil or selectedPart == "sell", render)
+          renderOffer(tableContent, data, stationEntry.tradeData, ware, "buy", not isStationEdit and (selectedPart == nil or selectedPart == "buy"), render)
+          renderOffer(tableContent, data, stationEntry.tradeData, ware, "sell", not isStationEdit and (selectedPart == nil or selectedPart == "sell"), render)
         end
         tableContent:addEmptyRow(Helper.standardTextHeight / 2)
       end
@@ -1460,7 +1621,8 @@ local function render()
   tableConfirm:addEmptyRow(Helper.standardTextHeight / 2)
   row = tableConfirm:addRow(true, { fixed = true })
 
-  row[4]:createCheckBox(data.edit.confirmed, { active = next(data.edit.selectedWares) ~= nil and data.edit.slider == nil })
+
+  row[4]:createCheckBox(data.edit.confirmed, { active = (waresSelected or dataIsChanged) and data.edit.slider == nil })
   row[4].handlers.onClick = function(_, checked)
     data.edit.confirmed = checked
     debugTrace("Set edit confirmed to " .. tostring(checked))
@@ -1484,7 +1646,6 @@ local function render()
 
   row = tableBottom:addRow(true, { fixed = true })
 
-  local dataIsChanged = data.edit.changed and next(data.edit.changed) ~= nil
   local selectedWareInfo = selectedWare and stationData and stationData.waresMap[selectedWare]
   local canBeDeleted = countSelectedWares > 0 and not dataIsChanged and data.edit.confirmed and selectedWareInfo ~= nil and selectedWareInfo.type == "trade"
   local canBeOfferRemoved = (selectedPart == "buy" or selectedPart == "sell") and not dataIsChanged
@@ -1499,11 +1660,16 @@ local function render()
     render()
   end
 
-  row[6]:createButton({ active = dataIsChanged and data.edit.confirmed }):setText(texts.updateWareButton,
+  row[6]:createButton({ active = dataIsChanged and data.edit.confirmed }):setText(isStationEdit and texts.updateStationButton or texts.updateWareButton,
     { halign = "center" })
   row[6].handlers.onClick = function()
     if dataIsChanged then
-      applyChanges(menu, selectedWare, selectedPart)
+      if isStationEdit then
+        applyStationChanges(menu)
+        data.editStationParams = nil
+      else
+        applyChanges(menu, selectedWare, selectedPart)
+      end
       render()
     end
   end
@@ -1513,15 +1679,20 @@ local function render()
   end
 
   if data.statusMessage == nil then
-    if selectedWare ~= nil then
+    if selectedWare ~= nil or isStationEdit then
       if countSelectedWares > 1 then
         data.statusMessage = string.format(tostring(texts.statusSelectedForDeletion or ""), tostring(countSelectedWares))
         data.statusColor = Color["text_warning"]
       else
-        local partText = selectedPart == "ware" and texts.mainPart or (selectedPart == "buy" and texts.buyOffer or texts.sellOffer)
-        local wareInfo = stationEntry.tradeData.waresMap[selectedWare] or {}
-        data.statusMessage = string.format(tostring(texts.statusSelectedWareInfo or ""), wareInfo.name or "unknown", partText)
-        showChangesInStatus(data, stationEntry, wareInfo)
+        local tradeData = stationEntry.tradeData or {}
+        local wareInfo = tradeData.waresMap[selectedWare] or {}
+        if isStationEdit then
+          data.statusMessage = texts.statusSelectedStationInfo or ""
+        else
+          local partText = selectedPart == "ware" and texts.mainPart or (selectedPart == "buy" and texts.buyOffer or texts.sellOffer)
+          data.statusMessage = string.format(tostring(texts.statusSelectedWareInfo or ""), wareInfo.name or "unknown", partText)
+        end
+        showChangesInStatus(data, stationEntry, tradeData, wareInfo)
         data.statusColor = Color["text_inactive"]
       end
     end

@@ -71,23 +71,24 @@ local texts = {
   pageInfo = ReadText(1972092410, 1301),
   confirmSave = ReadText(1972092410, 1401),
   updateWareButton = ReadText(1972092410, 1411),
-  updateStationButton = "Update Station", --ReadText(1972092410, 1414),
+  updateStationButton = ReadText(1972092410, 1414),
   deleteWareButton = ReadText(1972092410, 1412),
   removeOfferButton = ReadText(1972092410, 1413),
   cancelButton = ReadText(1972092410, 1419),
-  addButton = ReadText(1972092410, 1414),
   acceptButton = ReadText(1972092410, 1415),
+  addWare = ReadText(1972092410, 1421),
   statusNoStationSelected = ReadText(1972092410, 2001),
   statusNoWaresAvailable = ReadText(1972092410, 2002),
   statusNothingToProcess = ReadText(1972092410, 2003),
   statusUpdateSuccess = ReadText(1972092410, 2011),
   statusDeleteSuccess = ReadText(1972092410, 2021),
   statusRemoveSuccess = ReadText(1972092410, 2031),
-  statusSelectedForDeletion = ReadText(1972092410, 2111),
+  statusSelectedForDeletion = ReadText(1972092410, 2121),
   statusSelectedWareInfo = ReadText(1972092410, 2101),
   statusChangedValue = ReadText(1972092410, 2103),
   statusTradeOfferEnabled = ReadText(1972092410, 2102),
-  statusSelectedStationInfo = "Station parameters selected for edit" --ReadText(1972092410, 2104),
+  statusSelectedStationInfo = ReadText(1972092410, 2111),
+  statusAddedWare = ReadText(1972092410, 2112),
 }
 
 
@@ -265,7 +266,7 @@ local function ensureTradeRuleNames()
   if type(Helper.traderuleOptions) == "table" then
     for _, option in ipairs(Helper.traderuleOptions) do
       mapping[option.id] = option.text
-      if C.IsPlayerTradeRuleDefault(option.id, "buy") and C.IsPlayerTradeRuleDefault(option.id, "sell") then
+      if option.id >= 0 and C.IsPlayerTradeRuleDefault(option.id, "buy") and C.IsPlayerTradeRuleDefault(option.id, "sell") then
         tradeRuleDefault = option.id
       end
     end
@@ -463,6 +464,15 @@ local function tradeRulesDropdownOptions(isBuy, tradeData)
   return options
 end
 
+local function availableWaresDropdownOptions(availableWares)
+  local options = {}
+  for i = 1, #availableWares do
+    local wareEntry = availableWares[i]
+    options[#options + 1] = { id = wareEntry.ware, icon = "", text = wareEntry.name, text2 = "", displayremoveoption = false }
+  end
+  return options
+end
+
 local function formatNumber(value, override)
   if not override then
     return texts.auto
@@ -562,9 +572,15 @@ local function showChangesInStatus(data, stationEntry, tradeData, wareInfo)
     local newValue = formatTradeRuleLabel(data.edit.changed.ruleTrade or tradeData.rules.buy,
       isOverride, "global")
     if oldValue ~= newValue then
-      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.station .. " " .. texts.stationTrades, oldValue, newValue)
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.stationTrades, oldValue, newValue)
     end
   end
+
+  if data.edit.changed.addWare then
+    local wareName = GetWareData(data.edit.changed.addWare, "name")
+    data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusAddedWare or "", wareName)
+  end
+
   if wareInfo == nil or next(wareInfo) == nil then
     return
   end
@@ -765,6 +781,11 @@ local function applyStationChanges(menu)
   if changed.ruleTradeOverride ~= nil and not changed.ruleTradeOverride then
     C.SetContainerTradeRule(stationEntry.id64, -1, "buy", "", false)
     C.SetContainerTradeRule(stationEntry.id64, -1, "sell", "", false)
+  end
+
+  if changed.addWare then
+    debugTrace("Adding trade ware " .. tostring(changed.addWare) .. " to target station")
+    C.AddTradeWare(stationEntry.id64, changed.addWare)
   end
 
   collectTradeData(stationEntry, true)
@@ -1205,7 +1226,7 @@ local function renderStationParams(tableContent, data, tradeData, render)
     row[5].handlers.onDropDownConfirmed = function(_, id)
       data.edit.changed.ruleTrade = tonumber(id)
       data.edit.confirmed = false
-      debugTrace("Set to station trade rule edit to " .. tostring(id))
+      debugTrace("Set station trade rule edit to " .. tostring(id))
       data.statusMessage = nil
       data.content.tableTopSelectedRow = row.index
       render()
@@ -1216,6 +1237,26 @@ local function renderStationParams(tableContent, data, tradeData, render)
     else
       row[5]:createText(formatTradeRuleLabel(tradeData.rules.buy, ruleTradeOverride, "global"), optionsRule(ruleTradeOverride))
     end
+  end
+  local availableWareOptions = availableWaresDropdownOptions(tradeData.availableToAddWares)
+  row[9]:createText(texts.addWare .. ":")
+  row[10]:setColSpan(2):createDropDown(
+    availableWareOptions,
+    {
+      startOption = data.edit.changed.addWare or -1,
+      active = editStationParams,
+      textOverride = (#availableWareOptions == 0) and "No available wares" or nil,
+    }
+  )
+  row[10]:setTextProperties({ halign = "left" })
+  row[10]:setText2Properties({ halign = "right", color = Color["text_positive"] })
+  row[10].handlers.onDropDownConfirmed = function(_, id)
+    data.edit.changed.addWare = tostring(id)
+    data.edit.confirmed = false
+    debugTrace("Add new station ware with id " .. tostring(id))
+    data.statusMessage = nil
+    data.content.tableTopSelectedRow = row.index
+    render()
   end
 end
 

@@ -72,7 +72,7 @@ local texts = {
   statusNoStationSelected = ReadText(1972092410, 2001),
   statusNoWaresAvailable = ReadText(1972092410, 2002),
   statusSavedWithWarnings = ReadText(1972092410, 2012),
-  statusSuccess = ReadText(1972092410, 2011),
+  statusDeleteSuccess = "Deleted %d trade wares successfully.",
   statusSelectedForDeletion = "Selected %d wares for deletion.",--ReadText(1972092410, 2101)
   statusSelectedWareInfo = "For %s selected %s part of info for edit.",
   statusChangedValue = "Changed %s. Old value: %s, New value: %s.",
@@ -643,9 +643,26 @@ local function applyDelete(menu)
     return
   end
 
-  debugTrace("Applying delete to station: " .. tostring(stationEntry.displayName))
+  debugTrace("Applying deletion trade wares on station: " .. tostring(stationEntry.displayName))
 
-  local stationData = collectTradeData(stationEntry)
+
+  local tradeData = collectTradeData(stationEntry)
+  local deletedCount = 0
+  for ware, part in pairs(data.edit.selectedWares) do
+    if part == "ware" then
+      local wareInfo = tradeData.waresMap[ware]
+      if wareInfo and wareInfo.type == "trade" then
+        debugTrace("Removing trade ware " .. tostring(ware) .. " from target station")
+        C.RemoveTradeWare(stationEntry.id64, ware)
+        deletedCount = deletedCount + 1
+      end
+    end
+  end
+
+  debugTrace("Deleted total of " .. tostring(deletedCount) .. " trade wares on station: " .. tostring(stationEntry.displayName))
+
+  data.statusMessage = string.format(texts.statusDeleteSuccess, deletedCount)
+  data.statusColor = Color["text_success"]
 
   collectTradeData(stationEntry, true)
   reInitData(true)

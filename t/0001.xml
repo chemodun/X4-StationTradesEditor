@@ -21,14 +21,25 @@
       <t id="1211">Auto</t>
       <t id="1212">No Buy Offer</t>
       <t id="1213">No Sell Offer</t>
+      <t id="1219">Primary</t>
       <t id="1301">Page %d of %d</t>
       <t id="1401">Confirm before proceeding with saving</t>
-      <t id="1411">Save</t>
+      <t id="1411">Update ware</t>
+      <t id="1412">Delete [ %d ]</t>
+      <t id="1413">Remove offer</t>
+      <t id="1414">Add ware</t>
+      <t id="1415">Accept</t>
       <t id="1419">Cancel</t>
       <t id="2001">Select Station first!</t>
-      <t id="2011">Save operation completed successfully!\nProcessed wares: %d.</t>
-      <t id="2012">Save operation completed with warnings!\nProcessed wares: %d.\nSkipped wares: %s</t>
-      <t id="2101">Selected:\n Complete wares: %d.\n Separate attributes:\n - storage allocations: %d;\n - buy offers: %d;\n - sell offers: %d.</t>
+      <t id="2002">No wares available for managing!</t>
+      <t id="2003">Nothing to process. No changes made.</t>
+      <t id="2011">Update of %s completed successfully.</t>
+      <t id="2021">Deleted %d trade wares successfully.</t>
+      <t id="2031">%s for %s successfully removed.</t>
+      <t id="2101">For %s selected %s part of info for edit.</t>
+      <t id="2102"> - %s enabled.</t>
+      <t id="2103"> - Changed %s. Old value: %s, New value: %s.</t>
+      <t id="2111">Selected %d wares for deletion.</t>
     </page>
   </add>
 </diff>

@@ -54,7 +54,7 @@ local texts = {
   noWaresAvailable = ReadText(1972092410, 1203),
   buyOffer = ReadText(1001, 8309),
   sellOffer = ReadText(1001, 8308),
-  mainPart = "Primary",
+  mainPart = ReadText(1972092410, 1219),
   auto = ReadText(1972092410, 1211),
   noBuyOffer = ReadText(1972092410, 1212),
   noSellOffer = ReadText(1972092410, 1213),
@@ -64,18 +64,22 @@ local texts = {
   trade = ReadText(1972092410, 1124),
   pageInfo = ReadText(1972092410, 1301),
   confirmSave = ReadText(1972092410, 1401),
-  saveButton = ReadText(1972092410, 1411),
-  deleteButton = "Delete [ %d ]",
-  removeOfferButton = "Remove offer",
+  updateWareButton = ReadText(1972092410, 1411),
+  deleteWareButton = ReadText(1972092410, 1412),
+  removeOfferButton = ReadText(1972092410, 1413),
   cancelButton = ReadText(1972092410, 1419),
-  acceptButton = "Accept",
+  addButton = ReadText(1972092410, 1414),
+  acceptButton = ReadText(1972092410, 1415),
   statusNoStationSelected = ReadText(1972092410, 2001),
   statusNoWaresAvailable = ReadText(1972092410, 2002),
-  statusSavedWithWarnings = ReadText(1972092410, 2012),
-  statusDeleteSuccess = "Deleted %d trade wares successfully.",
-  statusSelectedForDeletion = "Selected %d wares for deletion.",--ReadText(1972092410, 2101)
-  statusSelectedWareInfo = "For %s selected %s part of info for edit.",
-  statusChangedValue = "Changed %s. Old value: %s, New value: %s.",
+  statusNothingToProcess = ReadText(1972092410, 2003),
+  statusUpdateSuccess = ReadText(1972092410, 2011),
+  statusDeleteSuccess = ReadText(1972092410, 2021),
+  statusRemoveSuccess = ReadText(1972092410, 2031),
+  statusSelectedForDeletion = ReadText(1972092410, 2111),
+  statusSelectedWareInfo = ReadText(1972092410, 2101),
+  statusChangedValue = ReadText(1972092410, 2103),
+  statusTradeOfferEnabled = ReadText(1972092410, 2102),
 }
 
 
@@ -487,6 +491,69 @@ local function reInitData(editOnly)
   data.waresCountTotal = 0
 end
 
+local function showChangesInStatus(data, stationEntry, wareInfo)
+  if data.edit.changed.storageLimit or data.edit.changed.storageLimitOverride ~= nil then
+    local oldValue = formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride)
+    local newValue = formatNumberWithPercentage(data.edit.changed.storageLimit or wareInfo.storageLimit,
+      (stationEntry.cargoCapacities[wareInfo.transport] and stationEntry.cargoCapacities[wareInfo.transport] > 0) and
+      (100.00 * (data.edit.changed.storageLimit or wareInfo.storageLimit) / stationEntry.cargoCapacities[wareInfo.transport]) or 100.00,
+      data.edit.changed.storageLimitOverride)
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.storage, oldValue, newValue)
+    end
+  end
+  if not wareInfo.buy.allowed and data.edit.changed.allowed == "buy" then
+    data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusTradeOfferEnabled or "", texts.buyOffer)
+  elseif not wareInfo.sell.allowed and data.edit.changed.allowed == "sell" then
+    data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusTradeOfferEnabled or "", texts.sellOffer)
+  end
+  if data.edit.changed.priceBuy or data.edit.changed.priceOverrideBuy ~= nil then
+    local oldValue = formatNumber(wareInfo.buy.price, wareInfo.buy.priceOverride)
+    local newValue = formatNumber(data.edit.changed.priceBuy or wareInfo.buy.price, data.edit.changed.priceOverrideBuy)
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.price, oldValue, newValue)
+    end
+  elseif data.edit.changed.priceSell or data.edit.changed.priceOverrideSell ~= nil then
+    local oldValue = formatNumber(wareInfo.sell.price, wareInfo.sell.priceOverride)
+    local newValue = formatNumber(data.edit.changed.priceSell or wareInfo.sell.price, data.edit.changed.priceOverrideSell)
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.price, oldValue, newValue)
+    end
+  end
+  if data.edit.changed.limitBuy or data.edit.changed.limitOverrideBuy ~= nil then
+    local oldValue = formatNumberWithPercentage(wareInfo.buy.limit, wareInfo.buy.limitPercentage, wareInfo.buy.limitOverride)
+    local newValue = formatNumberWithPercentage(data.edit.changed.limitBuy or wareInfo.buy.limit,
+      (wareInfo.storageLimit > 0) and (100.00 * (data.edit.changed.limitBuy or wareInfo.buy.limit) / wareInfo.storageLimit) or 100.00,
+      data.edit.changed.limitOverrideBuy)
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.amount, oldValue, newValue)
+    end
+  elseif data.edit.changed.limitSell or data.edit.changed.limitOverrideSell ~= nil then
+    local oldValue = formatNumberWithPercentage(wareInfo.sell.limit, wareInfo.sell.limitPercentage, wareInfo.sell.limitOverride)
+    local newValue = formatNumberWithPercentage(data.edit.changed.limitSell or wareInfo.sell.limit,
+      (wareInfo.storageLimit > 0) and (100.00 * (data.edit.changed.limitSell or wareInfo.sell.limit) / wareInfo.storageLimit) or 100.00,
+      data.edit.changed.limitOverrideSell)
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.amount, oldValue, newValue)
+    end
+  end
+  if data.edit.changed.ruleBuy or data.edit.changed.ruleOverrideBuy ~= nil then
+    local oldValue = formatTradeRuleLabel(wareInfo.buy.rule, wareInfo.buy.ruleOverride, wareInfo.buy.ruleRoot)
+    local newValue = formatTradeRuleLabel(data.edit.changed.ruleBuy or wareInfo.buy.rule,
+      data.edit.changed.ruleOverrideBuy, wareInfo.buy.ruleRoot)
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.rule, oldValue, newValue)
+    end
+  elseif data.edit.changed.ruleSell or data.edit.changed.ruleOverrideSell ~= nil then
+    local oldValue = formatTradeRuleLabel(wareInfo.sell.rule, wareInfo.sell.ruleOverride, wareInfo.sell.ruleRoot)
+    local newValue = formatTradeRuleLabel(data.edit.changed.ruleSell or wareInfo.sell.rule,
+      data.edit.changed.ruleOverrideSell, wareInfo.sell.ruleRoot)
+    if oldValue ~= newValue then
+      data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.rule, oldValue, newValue)
+    end
+  end
+end
+
 local function applyChanges(menu, ware, part)
   local data = menu and menu.contextMenuData or nil
   if not data or not ware then
@@ -500,8 +567,8 @@ local function applyChanges(menu, ware, part)
   end
 
   if data.edit.changed == nil or next(data.edit.changed) == nil then
-    data.statusMessage = texts.statusSuccess
-    data.statusColor = Color["text_success"]
+    data.statusMessage = texts.statusNothingToProcess
+    data.statusColor = Color["text_warning"]
     return
   end
 
@@ -515,6 +582,10 @@ local function applyChanges(menu, ware, part)
   end
 
   debugTrace("Applying changes to station: " .. tostring(stationEntry.displayName) .. " for ware: " .. tostring(ware) .. " part: " .. tostring(part))
+
+  data.statusMessage = string.format(texts.statusUpdateSuccess, wareInfo.name)
+  showChangesInStatus(data, stationEntry, wareInfo)
+  data.statusColor = Color["text_success"]
 
   if (part == "ware") then
     if changed.storageLimitOverride ~= nil and changed.storageLimitOverride or changed.storageLimit ~= nil then
@@ -579,9 +650,6 @@ local function applyChanges(menu, ware, part)
     end
   end
 
-  data.statusMessage = texts.statusSuccess
-  data.statusColor = Color["text_success"]
-
   collectTradeData(stationEntry, true)
   reInitData(true)
 end
@@ -623,7 +691,7 @@ local function applyRemoveOffer(menu, ware, part)
 
   end
 
-  data.statusMessage = texts.statusSuccess
+  data.statusMessage = string.format(texts.statusRemoveSuccess, part == "buy" and texts.buyOffer or texts.sellOffer, wareInfo.name)
   data.statusColor = Color["text_success"]
 
   collectTradeData(stationEntry, true)
@@ -1393,7 +1461,7 @@ local function render()
   local selectedWareInfo = selectedWare and stationData and stationData.waresMap[selectedWare]
   local canBeDeleted = countSelectedWares > 0 and not dataIsChanged and data.edit.confirmed and selectedWareInfo ~= nil and selectedWareInfo.type == "trade"
   local canBeOfferRemoved = (selectedPart == "buy" or selectedPart == "sell") and not dataIsChanged
-  row[4]:createButton({ active = canBeDeleted or canBeOfferRemoved }):setText(string.format(canBeOfferRemoved and texts.removeOfferButton or texts.deleteButton, canBeDeleted and countSelectedWares or 0),
+  row[4]:createButton({ active = canBeDeleted or canBeOfferRemoved }):setText(string.format(canBeOfferRemoved and texts.removeOfferButton or texts.deleteWareButton, canBeDeleted and countSelectedWares or 0),
     { halign = "center" })
   row[4].handlers.onClick = function()
     if canBeDeleted then
@@ -1404,7 +1472,7 @@ local function render()
     render()
   end
 
-  row[6]:createButton({ active = dataIsChanged and data.edit.confirmed }):setText(texts.saveButton,
+  row[6]:createButton({ active = dataIsChanged and data.edit.confirmed }):setText(texts.updateWareButton,
     { halign = "center" })
   row[6].handlers.onClick = function()
     if dataIsChanged then
@@ -1426,61 +1494,7 @@ local function render()
         local partText = selectedPart == "ware" and texts.mainPart or (selectedPart == "buy" and texts.buyOffer or texts.sellOffer)
         local wareInfo = stationEntry.tradeData.waresMap[selectedWare] or {}
         data.statusMessage = string.format(tostring(texts.statusSelectedWareInfo or ""), wareInfo.name or "unknown", partText)
-        if data.edit.changed.storageLimit or data.edit.changed.storageLimitOverride ~= nil then
-          local oldValue = formatNumberWithPercentage(wareInfo.storageLimit, wareInfo.storageLimitPercentage, wareInfo.storageLimitOverride)
-          local newValue = formatNumberWithPercentage(data.edit.changed.storageLimit or wareInfo.storageLimit,
-            (stationEntry.cargoCapacities[wareInfo.transport] and stationEntry.cargoCapacities[wareInfo.transport] > 0) and
-            (100.00 * (data.edit.changed.storageLimit or wareInfo.storageLimit) / stationEntry.cargoCapacities[wareInfo.transport]) or 100.00,
-            data.edit.changed.storageLimitOverride)
-          if oldValue ~= newValue then
-            data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.storage, oldValue, newValue)
-          end
-        end
-        if data.edit.changed.priceBuy or data.edit.changed.priceOverrideBuy ~= nil then
-          local oldValue = formatNumber(wareInfo.buy.price, wareInfo.buy.priceOverride)
-          local newValue = formatNumber(data.edit.changed.priceBuy or wareInfo.buy.price, data.edit.changed.priceOverrideBuy)
-          if oldValue ~= newValue then
-            data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.price, oldValue, newValue)
-          end
-        elseif data.edit.changed.priceSell or data.edit.changed.priceOverrideSell ~= nil then
-          local oldValue = formatNumber(wareInfo.sell.price, wareInfo.sell.priceOverride)
-          local newValue = formatNumber(data.edit.changed.priceSell or wareInfo.sell.price, data.edit.changed.priceOverrideSell)
-          if oldValue ~= newValue then
-            data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.price, oldValue, newValue)
-          end
-        end
-        if data.edit.changed.limitBuy or data.edit.changed.limitOverrideBuy ~= nil then
-          local oldValue = formatNumberWithPercentage(wareInfo.buy.limit, wareInfo.buy.limitPercentage, wareInfo.buy.limitOverride)
-          local newValue = formatNumberWithPercentage(data.edit.changed.limitBuy or wareInfo.buy.limit,
-            (wareInfo.storageLimit > 0) and (100.00 * (data.edit.changed.limitBuy or wareInfo.buy.limit) / wareInfo.storageLimit) or 100.00,
-            data.edit.changed.limitOverrideBuy)
-          if oldValue ~= newValue then
-            data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.amount, oldValue, newValue)
-          end
-        elseif data.edit.changed.limitSell or data.edit.changed.limitOverrideSell ~= nil then
-          local oldValue = formatNumberWithPercentage(wareInfo.sell.limit, wareInfo.sell.limitPercentage, wareInfo.sell.limitOverride)
-          local newValue = formatNumberWithPercentage(data.edit.changed.limitSell or wareInfo.sell.limit,
-            (wareInfo.storageLimit > 0) and (100.00 * (data.edit.changed.limitSell or wareInfo.sell.limit) / wareInfo.storageLimit) or 100.00,
-            data.edit.changed.limitOverrideSell)
-          if oldValue ~= newValue then
-            data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.amount, oldValue, newValue)
-          end
-        end
-        if data.edit.changed.ruleBuy or data.edit.changed.ruleOverrideBuy ~= nil then
-          local oldValue = formatTradeRuleLabel(wareInfo.buy.rule, wareInfo.buy.ruleOverride, wareInfo.buy.ruleRoot)
-          local newValue = formatTradeRuleLabel(data.edit.changed.ruleBuy or wareInfo.buy.rule,
-            data.edit.changed.ruleOverrideBuy, wareInfo.buy.ruleRoot)
-          if oldValue ~= newValue then
-            data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.buyOffer .. " " .. texts.rule, oldValue, newValue)
-          end
-        elseif data.edit.changed.ruleSell or data.edit.changed.ruleOverrideSell ~= nil then
-          local oldValue = formatTradeRuleLabel(wareInfo.sell.rule, wareInfo.sell.ruleOverride, wareInfo.sell.ruleRoot)
-          local newValue = formatTradeRuleLabel(data.edit.changed.ruleSell or wareInfo.sell.rule,
-            data.edit.changed.ruleOverrideSell, wareInfo.sell.ruleRoot)
-          if oldValue ~= newValue then
-            data.statusMessage = data.statusMessage .. "\n" .. string.format(texts.statusChangedValue or "", texts.sellOffer .. " " .. texts.rule, oldValue, newValue)
-          end
-        end
+        showChangesInStatus(data, stationEntry, wareInfo)
         data.statusColor = Color["text_inactive"]
       end
     end

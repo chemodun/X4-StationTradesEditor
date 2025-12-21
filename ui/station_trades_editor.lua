@@ -66,6 +66,7 @@ local texts = {
   confirmSave = ReadText(1972092410, 1401),
   saveButton = ReadText(1972092410, 1411),
   deleteButton = "Delete [ %d ]",
+  removeOfferButton = "Remove offer",
   cancelButton = ReadText(1972092410, 1419),
   acceptButton = "Accept",
   statusNoStationSelected = ReadText(1972092410, 2001),
@@ -584,6 +585,51 @@ local function applyChanges(menu, ware, part)
   collectTradeData(stationEntry, true)
   reInitData(true)
 end
+
+local function applyRemoveOffer(menu, ware, part)
+  local data = menu and menu.contextMenuData or nil
+  if not data or not ware then
+    return
+  end
+  local stationEntry = data.selectedStation and data.stations[data.selectedStation]
+  if not stationEntry then
+    data.statusMessage = texts.statusNoStationSelected
+    data.statusColor = Color["text_warning"]
+    return
+  end
+
+  local tradeData = collectTradeData(stationEntry)
+  local wareInfo = tradeData.waresMap[ware]
+  if not wareInfo then
+    data.statusMessage = texts.statusNoWaresAvailable
+    data.statusColor = Color["text_warning"]
+    return
+  end
+
+  debugTrace("Applying remove " .. tostring(part) .. " offer to station: " .. tostring(stationEntry.displayName) .. " for ware: " .. tostring(ware))
+
+  if (part == "buy") then
+    if wareInfo.buy.allowed then
+      C.ClearContainerBuyLimitOverride(stationEntry.id64, ware)
+      C.SetContainerWareIsBuyable(stationEntry.id64, ware, false)
+      ClearContainerWarePriceOverride(stationEntry.id64, ware, true)
+    end
+  elseif (part == "sell") then
+    if wareInfo.sell.allowed then
+      C.ClearContainerSellLimitOverride(stationEntry.id64, ware)
+      C.SetContainerWareIsSellable(stationEntry.id64, ware, false)
+      ClearContainerWarePriceOverride(stationEntry.id64, ware, false)
+    end
+
+  end
+
+  data.statusMessage = texts.statusSuccess
+  data.statusColor = Color["text_success"]
+
+  collectTradeData(stationEntry, true)
+  reInitData(true)
+end
+
 
 local function applyDelete(menu)
   local data = menu.contextMenuData
@@ -1329,13 +1375,16 @@ local function render()
   local dataIsChanged = data.edit.changed and next(data.edit.changed) ~= nil
   local selectedWareInfo = selectedWare and stationData and stationData.waresMap[selectedWare]
   local canBeDeleted = countSelectedWares > 0 and not dataIsChanged and data.edit.confirmed and selectedWareInfo ~= nil and selectedWareInfo.type == "trade"
-  row[4]:createButton({ active = canBeDeleted }):setText(string.format(texts.deleteButton, canBeDeleted and countSelectedWares or 0),
+  local canBeOfferRemoved = (selectedPart == "buy" or selectedPart == "sell") and not dataIsChanged
+  row[4]:createButton({ active = canBeDeleted or canBeOfferRemoved }):setText(string.format(canBeOfferRemoved and texts.removeOfferButton or texts.deleteButton, canBeDeleted and countSelectedWares or 0),
     { halign = "center" })
   row[4].handlers.onClick = function()
-    if countSelectedWares > 0 and not dataIsChanged then
+    if canBeDeleted then
       applyDelete(menu)
-      render()
+    elseif canBeOfferRemoved then
+      applyRemoveOffer(menu, selectedWare, selectedPart)
     end
+    render()
   end
 
   row[6]:createButton({ active = dataIsChanged and data.edit.confirmed }):setText(texts.saveButton,

@@ -523,6 +523,12 @@ local function applyChanges(menu, ware, part)
       ClearContainerStockLimitOverride(stationEntry.id64, ware)
     end
   elseif (part == "buy") then
+    if not wareInfo.buy.allowed and changed.allowed == "buy" then
+      debugTrace("Adding " .. part .. " offer for ware " .. tostring(ware) .. " on target station")
+      C.SetContainerWareIsBuyable(stationEntry.id64, ware, true)
+      tradeData = collectTradeData(stationEntry, true)
+      wareInfo = tradeData.waresMap[ware]
+    end
     if changed.priceOverrideBuy ~= nil and changed.priceOverrideBuy or changed.priceBuy ~= nil then
       SetContainerWarePriceOverride(stationEntry.id64, ware, true, changed.priceBuy ~= nil and changed.priceBuy or wareInfo.buy.price)
     end
@@ -544,6 +550,12 @@ local function applyChanges(menu, ware, part)
       C.SetContainerTradeRule(stationEntry.id64, -1, "buy", ware, false)
     end
   elseif (part == "sell") then
+    if not wareInfo.sell.allowed and changed.allowed == "sell" then
+      debugTrace("Adding " .. part .. " offer for ware " .. tostring(ware) .. " on target station")
+      C.SetContainerWareIsSellable(stationEntry.id64, ware, true)
+      tradeData = collectTradeData(stationEntry, true)
+      wareInfo = tradeData.waresMap[ware]
+    end
     if changed.priceOverrideSell ~= nil and changed.priceOverrideSell or changed.priceSell ~= nil then
       SetContainerWarePriceOverride(stationEntry.id64, ware, false, changed.priceSell ~= nil and changed.priceSell or wareInfo.sell.price)
     end
@@ -613,6 +625,10 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
     if not checked then
       data.edit.slider = nil
       data.edit.changed = {}
+    else
+      if not offerData.allowed then
+        data.edit.changed = { allowed = offerType }
+      end
     end
     debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer edit to " .. tostring(checked))
     data.edit.confirmed = false

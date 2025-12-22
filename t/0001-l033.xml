@@ -5,6 +5,7 @@
     <page id="1972092410" voice="no" title="Éditeur des échanges de station" descr="Textes pour l'Éditeur des échanges de station">
       <t id="1">Éditeur des échanges de station</t>
       <t id="2">L'Éditeur des échanges de station vous permet d'afficher et de modifier toutes les offres dans un tableau unique.</t>
+      <t id="11">Éditeur des échanges</t>
       <t id="1001">Éditeur des échanges de station</t>
       <t id="1011">Station</t>
       <t id="1101">Marchandise</t>
@@ -47,6 +48,7 @@
       <t id="3001">Aucune station du joueur disponible.</t>
       <t id="3002">Aucune règle commerciale disponible.</t>
       <t id="3003">Aucune marchandise disponible.</t>
+      <t id="10001">Gestion des échanges</t>
     </page>
   </add>
 </diff>

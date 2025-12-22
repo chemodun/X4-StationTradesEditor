@@ -5,6 +5,7 @@
     <page id="1972092410" voice="no" title="Editor de Ofertas da Estação" descr="Textos do Editor de Ofertas da Estação">
       <t id="1">Editor de Ofertas da Estação</t>
       <t id="2">O Editor de Ofertas da Estação permite visualizar e editar todas as ofertas em uma única tabela.</t>
+      <t id="11">Editor de Ofertas</t>
       <t id="1001">Editor de Ofertas da Estação</t>
       <t id="1011">Estação</t>
       <t id="1101">Mercadoria</t>
@@ -47,6 +48,7 @@
       <t id="3001">Nenhuma estação do jogador disponível.</t>
       <t id="3002">Nenhuma regra comercial disponível.</t>
       <t id="3003">Nenhuma mercadoria disponível.</t>
+      <t id="10001">Gestão Comercial</t>
     </page>
   </add>
 </diff>

@@ -5,6 +5,7 @@
     <page id="1972092410" voice="no" title="Editor obchodů stanice" descr="Texty pro Editor obchodů stanice">
       <t id="1">Editor obchodů stanice</t>
       <t id="2">Editor obchodů stanice vám umožní zobrazit a upravovat všechny nabídky v jedné tabulce.</t>
+      <t id="11">Editor obchodů</t>
       <t id="1001">Editor obchodů stanice</t>
       <t id="1011">Stanice</t>
       <t id="1101">Zboží</t>
@@ -47,6 +48,7 @@
       <t id="3001">Nejsou dostupné žádné stanice hráče.</t>
       <t id="3002">Nejsou dostupná žádná obchodní pravidla.</t>
       <t id="3003">Není dostupné žádné zboží.</t>
+      <t id="10001">Správa obchodů</t>
     </page>
   </add>
 </diff>

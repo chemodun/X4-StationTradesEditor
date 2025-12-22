@@ -46,6 +46,8 @@ local playerId = nil
 
 local texts = {
   title = ReadText(1972092410, 1001),
+  tooltip = ReadText(1972092410, 2),
+  button = ReadText(1972092410, 11),
   station = ReadText(1972092410, 1011),
   ware = ReadText(1972092410, 1101),
   storage = ReadText(1972092410, 1102),
@@ -1680,6 +1682,17 @@ local function render()
 
   row = tableBottom:addRow(true, { fixed = true })
 
+  local stationTCE = require("extensions.stations_tce.ui.trade_config_exchanger")
+  if stationTCE and stationTCE.isPresented and stationTCE.button and stationTCE.menuId and stationTCE.eventId and type(stationTCE.setArgs) == "function" then
+    row[2]:createButton({ active = true }):setText(stationTCE.button, { halign = "center", color = Color["text_positive"] })
+    row[2].handlers.onClick = function()
+      local args = { selectedStation = stationEntry.id64 }
+      stationTCE.setArgs(args)
+      menu.closeContextMenu()
+      AddUITriggeredEvent(stationTCE.menuId, stationTCE.eventId)
+    end
+  end
+
   local selectedWareInfo = selectedWare and stationData and stationData.waresMap[selectedWare]
   local canBeDeleted = countSelectedWares > 0 and not dataIsChanged and data.edit.confirmed and selectedWareInfo ~= nil and selectedWareInfo.type == "trade"
   local canBeOfferRemoved = (selectedPart == "buy" or selectedPart == "sell") and not dataIsChanged and data.edit.confirmed
@@ -1773,6 +1786,21 @@ local function getArgs()
   return nil
 end
 
+  local function setArgs(playerId, args)
+  if playerId == 0 then
+    debugTrace("setArgs unable to resolve player id")
+  else
+    local list = GetNPCBlackboard(playerId, "$StationTradesEditorSelected")
+    if type(list) ~= "table" then
+      list = {}
+    end
+    table.insert(list, args)
+    SetNPCBlackboard(playerId, "$StationTradesEditorSelected", list)
+    debugTrace("setArgs stored args in blackboard for player " .. tostring(playerId))
+  end
+end
+
+
 local function show()
   debugTrace("Show called")
   if type(menu) ~= "table" or type(Helper) ~= "table" then
@@ -1845,4 +1873,15 @@ local function Init()
   debugTrace("MapMenu is " .. tostring(menu))
 end
 
-Register_Require_With_Init("extensions.station_trades_editor.ui.station_trades_editor", nil, Init)
+local STE = {
+  isPresented = true,
+  button = texts.button,
+  tooltip = texts.tooltip,
+  menuId = "StationTradesEditor",
+  eventId = "show",
+  setArgs = function(args)
+    setArgs(playerId, args)
+  end,
+}
+
+Register_Require_With_Init("extensions.station_trades_editor.ui.station_trades_editor", STE, Init)

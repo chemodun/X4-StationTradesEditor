@@ -5,6 +5,7 @@
     <page id="1972092410" voice="no" title="Edytor Handlu Stacji" descr="Teksty Edytora Handlu Stacji">
       <t id="1">Edytor Handlu Stacji</t>
       <t id="2">Edytor Handlu Stacji pozwala przeglądać i edytować wszystkie oferty w jednym widoku tabelarycznym.</t>
+      <t id="11">Edytor handlu</t>
       <t id="1001">Edytor Handlu Stacji</t>
       <t id="1011">Stacja</t>
       <t id="1101">Towar</t>
@@ -47,6 +48,7 @@
       <t id="3001">Brak dostępnych stacji gracza.</t>
       <t id="3002">Brak dostępnych reguł handlowych.</t>
       <t id="3003">Brak dostępnych towarów.</t>
+      <t id="10001">Zarządzanie handlem</t>
     </page>
   </add>
 </diff>

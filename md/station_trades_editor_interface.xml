@@ -2,14 +2,48 @@
 <mdscript name="Station_Trades_Editor_Interface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="md.xsd">
   <cues>
 
-    <cue name="Main">
+    <cue name="Main" version="2">
       <conditions>
         <event_cue_signalled cue="md.Setup.Start" />
       </conditions>
       <actions>
         <set_value name="$DebugChance" exact="0" />
+        <set_value name="$uixInteractMenuPresent" exact="false" />
+        <set_value name="$isInitializedAt" exact="null" />
       </actions>
+      <patch sinceversion="2">
+        <set_value name="$uixInteractMenuPresent" exact="false" />
+        <set_value name="$isInitializedAt" exact="null" />
+      </patch>
       <cues>
+        <cue name="STE_On_Reload" instantiate="true" version="1">
+          <conditions>
+            <check_any>
+              <event_cue_signalled cue="md.Interact_Menu_API.Reloaded" />
+              <event_game_loaded />
+            </check_any>
+          </conditions>
+          <actions>
+            <do_if value="not $isInitializedAt? or (player.age - $isInitializedAt) gt 10">
+              <set_value name="$uixInteractMenuPresent" exact="false" />
+              <raise_lua_event name="'Interact_Menu_API.Existence_Query'" />
+              <reset_cue cue="this" />
+            </do_if>
+          </actions>
+        </cue>
+
+        <cue name="STE_On_UIX_Interact_Menu_Present" instantiate="true" version="1">
+          <conditions>
+            <event_ui_triggered screen="'UIX_Interact_Menu_Present'" />
+          </conditions>
+          <actions>
+            <set_value name="$uixInteractMenuPresent" exact="true" />
+            <debug_text text="'TradesEditor: UIX Interact Menu Present: %s'.[$uixInteractMenuPresent]" chance="100" filter="scripts" />
+            <raise_lua_event name="'Interact_Menu_API.Add_Custom_Actions_Group_Id'" param="'station_trade_management_group'" />
+            <raise_lua_event name="'Interact_Menu_API.Add_Custom_Actions_Group_Text'" param="{1972092410, 10001}" />
+            <reset_cue cue="this" />
+          </actions>
+        </cue>
 
         <cue name="Add_Menu_Item" instantiate="true">
           <conditions>
@@ -23,10 +57,10 @@
                 cue="md.Interact_Menu_API.Add_Action"
                 param="table[
                   $id         = 'station_trades_editor_load',
-                  $section    = 'main',
+                  $section    = if @$uixInteractMenuPresent == true then 'station_trade_management_group' else 'main',
                   $text       = {1972092410, 1},
                   $mouseover  = {1972092410, 2},
-                  $text2      = $station.knownname,
+                  $text2      = if @$uixInteractMenuPresent == true then '' else $station.knownname,
                   $icon       = 'menu_shoppingcart',
                   $active     = true,
                   $callback   = Show_Interface,
@@ -58,6 +92,18 @@
             </do_if>
           </actions>
 
+        </cue>
+
+        <cue name="External_Call" instantiate="true">
+          <conditions>
+            <event_ui_triggered screen="'StationTradesEditor'" control="'show'" />
+          </conditions>
+          <actions>
+            <debug_text
+              text="'StationTradesEditor: External_Call triggered with data: %s'.[@player.entity.$StationTradesEditorSelected.last]" chance="100"
+              filter="scripts" />
+            <raise_lua_event name="'StationTradesEditorShow'" />
+          </actions>
         </cue>
 
       </cues>

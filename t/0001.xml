@@ -4,6 +4,7 @@
     <page id="1972092410" voice="no" title="Station Trades Editor" descr="Text for Station Trades Editor">
       <t id="1">Station Trades Editor</t>
       <t id="2">Station Trades Editor allows you to view and edit all trades in one place presented as a table.</t>
+      <t id="11">Trades Editor</t>
       <t id="1001">Station Trades Editor</t>
       <t id="1011">Station</t>
       <t id="1101">Ware</t>
@@ -46,6 +47,7 @@
       <t id="3001">No player stations available.</t>
       <t id="3002">No trade rules available.</t>
       <t id="3003">No wares available.</t>
+      <t id="10001">Trade Management</t>
     </page>
   </add>
 </diff>

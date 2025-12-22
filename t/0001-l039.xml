@@ -5,6 +5,7 @@
     <page id="1972092410" voice="no" title="Editor Commerci Stazione" descr="Testi per l'Editor Commerci Stazione">
       <t id="1">Editor Commerci Stazione</t>
       <t id="2">L'Editor Commerci Stazione permette di visualizzare e modificare tutte le offerte in un'unica tabella.</t>
+      <t id="11">Editor Commerci</t>
       <t id="1001">Editor Commerci Stazione</t>
       <t id="1011">Stazione</t>
       <t id="1101">Merce</t>
@@ -47,6 +48,7 @@
       <t id="3001">Nessuna stazione del giocatore disponibile.</t>
       <t id="3002">Nessuna regola commerciale disponibile.</t>
       <t id="3003">Nessuna merce disponibile.</t>
+      <t id="10001">Gestione dei commerci</t>
     </page>
   </add>
 </diff>

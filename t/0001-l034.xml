@@ -5,6 +5,7 @@
     <page id="1972092410" voice="no" title="Editor de Comercios de Estación" descr="Texto para el Editor de Comercios de Estación">
       <t id="1">Editor de Comercios de Estación</t>
       <t id="2">El Editor de Comercios de Estación te permite ver y editar todas las ofertas en un único cuadro.</t>
+      <t id="11">Editor de Comercios</t>
       <t id="1001">Editor de Comercios de Estación</t>
       <t id="1011">Estación</t>
       <t id="1101">Artículo</t>
@@ -47,6 +48,7 @@
       <t id="3001">No hay estaciones del jugador disponibles.</t>
       <t id="3002">No hay reglas comerciales disponibles.</t>
       <t id="3003">No hay mercancías disponibles.</t>
+      <t id="10001">Gestión Comercial</t>
     </page>
   </add>
 </diff>

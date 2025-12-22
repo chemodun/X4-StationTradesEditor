@@ -5,6 +5,7 @@
     <page id="1972092410" voice="no" title="İstasyon Ticaret Düzenleyicisi" descr="İstasyon Ticaret Düzenleyicisi metni">
       <t id="1">İstasyon Ticaret Düzenleyicisi</t>
       <t id="2">İstasyon Ticaret Düzenleyicisi tüm işlemleri tek bir tabloda görmenizi ve düzenlemenizi sağlar.</t>
+      <t id="11">Ticaret Düzenleyicisi</t>
       <t id="1001">İstasyon Ticaret Düzenleyicisi</t>
       <t id="1011">İstasyon</t>
       <t id="1101">Mal</t>
@@ -47,6 +48,7 @@
       <t id="3001">Kullanılabilir oyuncu istasyonu yok.</t>
       <t id="3002">Kullanılabilir ticaret kuralı yok.</t>
       <t id="3003">Kullanılabilir mal yok.</t>
+      <t id="10001">Ticaret Yönetimi</t>
     </page>
   </add>
 </diff>

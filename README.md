@@ -28,7 +28,7 @@ Station Trades Editor allows you to view and edit all trades in one place presen
 
 ## Installation
 
-You can download the latest version via Steam client - [Station Trades Editor](https://steamcommunity.com/sharedfiles/filedetails/?id=)
+You can download the latest version via Steam client - [Station Trades Editor](https://steamcommunity.com/sharedfiles/filedetails/?id=3628752347)
 Or you can do it via the Nexus Mods - [Station Trades Editor](https://www.nexusmods.com/x4foundations/mods/1914)
 
 ## Usage

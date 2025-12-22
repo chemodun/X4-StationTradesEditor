@@ -1,0 +1,135 @@
+[size=140][u]Station Trades Editor[/u][/size]
+
+Station Trades Editor allows you to view and edit all trades in one place presented as a table.
+
+[size=130][u]Features[/u][/size]
+[list]
+[*] View and edit all trades of the selected trading station in one place.
+[*] Edit station trade rules.
+[*] Add new wares for trade.
+[*] Selectable editing of ware storage allocations.
+[*] Selectable editing of trade offers (buy and sell) per ware.
+[*] Deletion of trade offers (buy and sell) per ware.
+[/list]
+[size=130][u]Limitations[/u][/size]
+[list]
+[*] Identifies trading stations as stations with cargo bays and without production modules. I.e. if your defense platform has cargo modules - it's will be identified as trading station.
+[/list]
+[size=130][u]Requirements[/u][/size]
+[list]
+[*] [b]X4: Foundations[/b] 7.60 or newer (tested on 7.60 and 8.00).
+[*] [b]Mod Support APIs[/b] by [url=https://next.nexusmods.com/profile/sirnukes?gameId=2659]SirNukes[/url] to be installed and enabled. Version [b]1.93[/b] and upper is required.
+[list]
+[*] It is available via Steam - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2042901274]SirNukes Mod Support APIs[/url]
+[*] Or via the Nexus Mods - [url=https://www.nexusmods.com/x4foundations/mods/503]Mod Support APIs[/url]
+[/list]
+[/list]
+[size=130][u]Caution[/u][/size]
+
+[b]Please, be aware that is first public release version of the Station Trades Editor mod. Although it was tested in several scenarios, there may be some unforeseen issues or bugs.[/b]
+
+[size=130][u]Installation[/u][/size]
+
+You can download the latest version via Steam client - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=]Station Trades Editor[/url]
+Or you can do it via the Nexus Mods - [url=https://www.nexusmods.com/x4foundations/mods/1914]Station Trades Editor[/url]
+
+[size=130][u]Usage[/u][/size]
+
+[size=125][u]How to call the Station Trades Editor[/u][/size]
+
+You can open the Station Trades Editor from the Stations Context Menu.
+
+To do this, simply select a station on a [b]Map[/b] or from [b]Property Owned[/b] list, then right-click on it, and select [b]Station Trades Editor[/b] from the context menu.
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/select_from_context_menu.png[/img][/spoiler]
+
+[size=125][u]Usage of the Station Trades Editor[/u][/size]
+
+The Station Trades Editor allows you to select the Station, and then configure it.
+
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/initial_screen.png[/img][/spoiler]
+
+At the beginning only the Station is pre-selected as you opened the UI from its context menu. At any time you can change the Station by selecting another one from the [b]Station[/b] dropdown list.
+
+[size=120][u]Main principles of the Station Trades Editor[/u][/size]
+[list]
+[*] To start editing data in any row - you need to check the checkbox in the leftmost column of the table row. It is a common principle for all editable fields in the Station Trades Editor.
+[*] Simple unchecked checkbox resumes values to the original ones.
+[*] Numeric values are edited via the slider approach. I.e. you need press the button with the current value to open the slider, made the changes, and then press the [b]Accept[/b] button to confirm the changes.
+[*] Selectable values are edited via the dropdown list approach.
+[*] After you made the desired changes - please select the confirmation checkbox at the bottom of the UI - [b]Confirm before proceeding with applying changes[/b].
+[*] And then press the appropriate button to apply the changes.
+[/list]
+[size=120][u]Editing Station Trade Parameters[/u][/size]
+
+To edit the Station Trade Parameters, select the desired parameters from the top table. You can edit:
+[list]
+[*] Station Trade Rule Override - enable or disable the override for the station trade rules.
+[*] Station Trade Rule - select the trade rule to apply to the station from the list of available trade rules.
+[*] Add New Ware - add a new ware to the station trade list.
+[/list]
+After you made the desired changes to the Station Trade Parameters - please select the confirmation checkbox at the bottom of the UI - [b]Confirm before proceeding with applying changes[/b]. And then press the [b]Update Station[/b] button to apply the changes to the station.
+
+[size=120][u]Editing Ware Storage Allocations[/u][/size]
+
+Again - to edit the Ware Storage Allocations - you need to check the checkbox in the leftmost column of the table row.
+After you made it - the screen will be changed and checkbox which responsible for the enabling/disabling override of the ware storage allocation will be shown.
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/storage_allocation_first_step.png[/img][/spoiler]
+
+If you will uncheck the checkbox - the current value will be displayed as a button, pressing which will show for you the big slider to adjust the storage allocation value.
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/storage_allocation_slider.png[/img][/spoiler]
+
+After you made the desired changes of the value - please press the [b]Accept[/b] button to confirm the changes.
+
+At the bottom of the UI - you can find the status bar which will inform you about the current status of your changes.
+
+And then next - confirm the changes by selecting the confirmation checkbox at the bottom of the UI - [b]Confirm before proceeding with applying changes[/b]. And then press the [b]Update Ware[/b] button to apply the changes to the ware.
+
+[size=115][u]Editing the Trade Offers[/u][/size]
+
+The same principle is applied to the Trade Offers editing. You can edit both - [b]Buy Offer[/b] and [b]Sell Offer[/b] of the ware.
+
+Numeric values are edited via the slider approach, the rules are selected from the dropdown list.
+
+There is an example of editing the [b]Buy Offer[/b] of the ware:
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/buy_offer_editing.png[/img][/spoiler]
+
+[size=120][u]Deleting the Trade Offers[/u][/size]
+
+To delete the Trade Offers - you need to check the checkbox in the leftmost column of the table row and not making any changes to the ware parameters select the confirmation checkbox at the bottom of the UI - [b]Confirm before proceeding with applying changes[/b].
+
+And then press the [b]Remove offer[/b] button to delete the trade offer from the ware and station.
+
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/buy_offer_deleting.png[/img][/spoiler]
+
+[size=120][u]Deleting the Wares[/u][/size]
+
+There is possible to delete only the [b]Trade wares[/b], i.e. not [b]resource[/b], [b]intermediate[/b], or [b]product[/b] wares can be deleted.
+
+In addition - you can mark fro deletion all [b]Trade wares[/b] at once. Simplely check the checkbox in the leftmost column of the [b]Trade wares[/b] "header" row.
+
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/deleting_several_trade_wares.png[/img][/spoiler]
+
+[size=130][u]Video[/u][/size]
+
+[url=https://www.youtube.com/watch?v=VtRy1gzz8Es]Video demonstration of the Station Trades Editor. Version 1.00[/url]
+
+[size=130][u]Credits[/u][/size]
+[list]
+[*] Author: Chem O`Dun, on [url=https://next.nexusmods.com/profile/ChemODun/mods?gameId=2659]Nexus Mods[/url] and [url=https://steamcommunity.com/id/chemodun/myworkshopfiles/?appid=392160]Steam Workshop[/url]
+[*] [i]"X4: Foundations"[/i] is a trademark of [url=https://www.egosoft.com]Egosoft[/url].
+[/list]
+[size=130][u]Acknowledgements[/u][/size]
+[list]
+[*] [url=https://www.egosoft.com]EGOSOFT[/url] — for the X series.
+[*] [url=https://next.nexusmods.com/profile/sirnukes?gameId=2659]SirNukes[/url] — for the Mod Support APIs that power the UI hooks.
+[*] [url=https://next.nexusmods.com/profile/Forleyor?gameId=2659]Forleyor[/url] — for his constant help with understanding the UI modding! And especially for the help with resolving the scaling issue!
+[/list]
+[size=130][u]Changelog[/u][/size]
+
+[size=125][u][1.00] - 2025-12-22[/u][/size]
+[list]
+[*] Added
+[list]
+[*] Initial public version
+[/list]
+[/list]

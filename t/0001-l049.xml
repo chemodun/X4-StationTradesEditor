@@ -24,7 +24,7 @@
       <t id="1213">Kein Verkaufsangebot</t>
       <t id="1219">Primär</t>
       <t id="1301">Seite %d von %d</t>
-      <t id="1401">Vor dem Speichern bestätigen</t>
+      <t id="1401">Vor dem Anwenden der Änderungen bestätigen</t>
       <t id="1411">Ware aktualisieren</t>
       <t id="1412">Löschen [ %d ]</t>
       <t id="1413">Angebot entfernen</t>
@@ -44,6 +44,9 @@
       <t id="2111">Stationsparameter zur Bearbeitung ausgewählt.</t>
       <t id="2112"> - Neue Ware %s zum Handel hinzugefügt.</t>
       <t id="2121">%d Waren zum Löschen ausgewählt.</t>
+      <t id="3001">Keine Spielerstationen verfügbar.</t>
+      <t id="3002">Keine Handelsregeln verfügbar.</t>
+      <t id="3003">Keine Waren verfügbar.</t>
     </page>
   </add>
 </diff>

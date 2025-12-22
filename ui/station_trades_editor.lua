@@ -89,6 +89,9 @@ local texts = {
   statusTradeOfferEnabled = ReadText(1972092410, 2102),
   statusSelectedStationInfo = ReadText(1972092410, 2111),
   statusAddedWare = ReadText(1972092410, 2112),
+  noPlayerStations = ReadText(1972092410, 3001),
+  noAvailableTradeRules = ReadText(1972092410, 3002),
+  noAvailableWares = ReadText(1972092410, 3003),
 }
 
 
@@ -1069,7 +1072,7 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
       {
         startOption = effectiveRule or -1,
         active = true,
-        textOverride = (#tradeRuleOptions == 0) and "No trade rules" or nil,
+        textOverride = (#tradeRuleOptions == 0) and texts.noAvailableTradeRules or nil,
       }
     )
     row[11]:setTextProperties({ halign = "left" })
@@ -1215,7 +1218,7 @@ local function renderStationParams(tableContent, data, tradeData, render)
       {
         startOption = effectiveTradeRule or -1,
         active = true,
-        textOverride = (#tradeRuleOptions == 0) and "No trade rules" or nil,
+        textOverride = (#tradeRuleOptions == 0) and texts.noAvailableTradeRules or nil,
       }
     )
     row[5]:setTextProperties({ halign = "left" })
@@ -1241,7 +1244,7 @@ local function renderStationParams(tableContent, data, tradeData, render)
     {
       startOption = data.edit.changed.addWare or -1,
       active = editStationParams,
-      textOverride = (#availableWareOptions == 0) and "No available wares" or nil,
+      textOverride = (#availableWareOptions == 0) and texts.noAvailableWares or nil,
     }
   )
   row[10]:setTextProperties({ halign = "left" })
@@ -1329,7 +1332,7 @@ local function render()
   row[5]:setColSpan(7):createDropDown(data.stationOptions, {
     startOption = data.selectedStation or -1,
     active = #data.stationOptions > 0,
-    textOverride = (#data.stationOptions == 0) and "No player stations" or nil,
+    textOverride = (#data.stationOptions == 0) and texts.noPlayerStations or nil,
   })
   row[5]:setTextProperties({ halign = "left", color = Color["text_positive"] })
   row[5]:setText2Properties({ halign = "right" })

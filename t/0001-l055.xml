@@ -24,7 +24,7 @@
       <t id="1213">Sem oferta de venda</t>
       <t id="1219">Primário</t>
       <t id="1301">Página %d de %d</t>
-      <t id="1401">Confirme antes de salvar</t>
+      <t id="1401">Confirme antes de aplicar as alterações</t>
       <t id="1411">Atualizar mercadoria</t>
       <t id="1412">Excluir [ %d ]</t>
       <t id="1413">Remover oferta</t>
@@ -44,6 +44,9 @@
       <t id="2111">Parâmetros da estação selecionados para edição.</t>
       <t id="2112"> - Nova mercadoria %s adicionada ao comércio.</t>
       <t id="2121">%d mercadorias selecionadas para exclusão.</t>
+      <t id="3001">Nenhuma estação do jogador disponível.</t>
+      <t id="3002">Nenhuma regra comercial disponível.</t>
+      <t id="3003">Nenhuma mercadoria disponível.</t>
     </page>
   </add>
 </diff>

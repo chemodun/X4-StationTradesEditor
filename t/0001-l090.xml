@@ -24,7 +24,7 @@
       <t id="1213">Satım teklifi yok</t>
       <t id="1219">Birincil</t>
       <t id="1301">%d / %d sayfa</t>
-      <t id="1401">Kaydetmeden önce onaylayın</t>
+      <t id="1401">Değişiklikleri uygulamadan önce onaylayın</t>
       <t id="1411">Malı güncelle</t>
       <t id="1412">Sil [ %d ]</t>
       <t id="1413">Teklifi kaldır</t>
@@ -44,6 +44,9 @@
       <t id="2111">Düzenleme için istasyon parametreleri seçildi.</t>
       <t id="2112"> - Ticarete yeni %s malı eklendi.</t>
       <t id="2121">Silmek üzere %d mal seçildi.</t>
+      <t id="3001">Kullanılabilir oyuncu istasyonu yok.</t>
+      <t id="3002">Kullanılabilir ticaret kuralı yok.</t>
+      <t id="3003">Kullanılabilir mal yok.</t>
     </page>
   </add>
 </diff>

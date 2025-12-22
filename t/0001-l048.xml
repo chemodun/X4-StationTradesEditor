@@ -24,7 +24,7 @@
       <t id="1213">Brak oferty sprzedaży</t>
       <t id="1219">Podstawowy</t>
       <t id="1301">Strona %d z %d</t>
-      <t id="1401">Potwierdź przed zapisaniem</t>
+      <t id="1401">Potwierdź przed zastosowaniem zmian</t>
       <t id="1411">Aktualizuj towar</t>
       <t id="1412">Usuń [ %d ]</t>
       <t id="1413">Usuń ofertę</t>
@@ -44,6 +44,9 @@
       <t id="2111">Parametry stacji wybrane do edycji.</t>
       <t id="2112"> - Dodano nowy towar %s do handlu.</t>
       <t id="2121">Wybrano %d towarów do usunięcia.</t>
+      <t id="3001">Brak dostępnych stacji gracza.</t>
+      <t id="3002">Brak dostępnych reguł handlowych.</t>
+      <t id="3003">Brak dostępnych towarów.</t>
     </page>
   </add>
 </diff>

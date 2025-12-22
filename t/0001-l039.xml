@@ -24,7 +24,7 @@
       <t id="1213">Nessuna offerta di vendita</t>
       <t id="1219">Primario</t>
       <t id="1301">Pagina %d di %d</t>
-      <t id="1401">Conferma prima di salvare</t>
+      <t id="1401">Conferma prima di applicare le modifiche</t>
       <t id="1411">Aggiorna merce</t>
       <t id="1412">Elimina [ %d ]</t>
       <t id="1413">Rimuovi offerta</t>
@@ -44,6 +44,9 @@
       <t id="2111">Parametri della stazione selezionati per la modifica.</t>
       <t id="2112"> - Aggiunta la nuova merce %s al commercio.</t>
       <t id="2121">%d merci selezionate per l'eliminazione.</t>
+      <t id="3001">Nessuna stazione del giocatore disponibile.</t>
+      <t id="3002">Nessuna regola commerciale disponibile.</t>
+      <t id="3003">Nessuna merce disponibile.</t>
     </page>
   </add>
 </diff>

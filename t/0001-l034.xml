@@ -24,7 +24,7 @@
       <t id="1213">Sin oferta de venta</t>
       <t id="1219">Primario</t>
       <t id="1301">Página %d de %d</t>
-      <t id="1401">Confirma antes de guardar</t>
+      <t id="1401">Confirma antes de aplicar los cambios</t>
       <t id="1411">Actualizar artículo</t>
       <t id="1412">Eliminar [ %d ]</t>
       <t id="1413">Quitar oferta</t>
@@ -44,6 +44,9 @@
       <t id="2111">Parámetros de estación seleccionados para editar.</t>
       <t id="2112"> - Se añadió el nuevo artículo %s al comercio.</t>
       <t id="2121">Se seleccionaron %d artículos para eliminar.</t>
+      <t id="3001">No hay estaciones del jugador disponibles.</t>
+      <t id="3002">No hay reglas comerciales disponibles.</t>
+      <t id="3003">No hay mercancías disponibles.</t>
     </page>
   </add>
 </diff>

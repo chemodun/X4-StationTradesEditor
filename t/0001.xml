@@ -23,7 +23,7 @@
       <t id="1213">No Sell Offer</t>
       <t id="1219">Primary</t>
       <t id="1301">Page %d of %d</t>
-      <t id="1401">Confirm before proceeding with saving</t>
+      <t id="1401">Confirm before proceeding with applying changes</t>
       <t id="1411">Update ware</t>
       <t id="1412">Delete [ %d ]</t>
       <t id="1413">Remove offer</t>
@@ -43,6 +43,9 @@
       <t id="2111">Station parameters selected for edit.</t>
       <t id="2112"> - Added new ware %s for trade.</t>
       <t id="2121">Selected %d wares for deletion.</t>
+      <t id="3001">No player stations available.</t>
+      <t id="3002">No trade rules available.</t>
+      <t id="3003">No wares available.</t>
     </page>
   </add>
 </diff>

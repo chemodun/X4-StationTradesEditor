@@ -24,7 +24,7 @@
       <t id="1213">Žádná prodejní nabídka</t>
       <t id="1219">Primární</t>
       <t id="1301">Strana %d z %d</t>
-      <t id="1401">Před uložením potvrďte</t>
+      <t id="1401">Potvrďte před použitím změn</t>
       <t id="1411">Aktualizovat zboží</t>
       <t id="1412">Smazat [ %d ]</t>
       <t id="1413">Odebrat nabídku</t>
@@ -44,6 +44,9 @@
       <t id="2111">Parametry stanice vybrány k úpravě.</t>
       <t id="2112"> - Přidáno nové zboží %s k obchodu.</t>
       <t id="2121">Vybráno %d zboží k odstranění.</t>
+      <t id="3001">Nejsou dostupné žádné stanice hráče.</t>
+      <t id="3002">Nejsou dostupná žádná obchodní pravidla.</t>
+      <t id="3003">Není dostupné žádné zboží.</t>
     </page>
   </add>
 </diff>

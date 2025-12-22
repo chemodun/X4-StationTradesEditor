@@ -1682,7 +1682,7 @@ local function render()
 
   local selectedWareInfo = selectedWare and stationData and stationData.waresMap[selectedWare]
   local canBeDeleted = countSelectedWares > 0 and not dataIsChanged and data.edit.confirmed and selectedWareInfo ~= nil and selectedWareInfo.type == "trade"
-  local canBeOfferRemoved = (selectedPart == "buy" or selectedPart == "sell") and not dataIsChanged
+  local canBeOfferRemoved = (selectedPart == "buy" or selectedPart == "sell") and not dataIsChanged and data.edit.confirmed
   row[4]:createButton({ active = canBeDeleted or canBeOfferRemoved }):setText(string.format(canBeOfferRemoved and texts.removeOfferButton or texts.deleteWareButton, canBeDeleted and countSelectedWares or 0),
     { halign = "center" })
   row[4].handlers.onClick = function()

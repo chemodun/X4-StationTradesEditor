@@ -93,8 +93,9 @@ There is an example of editing the `Buy Offer` of the ware:
 
 #### Deleting the Trade Offers
 
-To delete the Trade Offers - you need to check the checkbox in the leftmost column of the table row and not making any changes to the ware parameters select the confirmation checkbox at the bottom of the UI - `Confirm before proceeding with applying changes`. And then press the
-`Remove offer` button to delete the trade offer from the ware and station.
+To delete the Trade Offers - you need to check the checkbox in the leftmost column of the table row and not making any changes to the ware parameters select the confirmation checkbox at the bottom of the UI - `Confirm before proceeding with applying changes`.
+
+And then press the `Remove offer` button to delete the trade offer from the ware and station.
 
 ![Going to delete buy offer](docs/images/buy_offer_deleting.png)
 

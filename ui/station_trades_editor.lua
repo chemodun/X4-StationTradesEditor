@@ -550,7 +550,6 @@ local function reInitData(editOnly)
     return
   end
   data.content = {}
-  data.top = {}
   data.waresStartIndex = 1
   data.waresCountTotal = 0
 end
@@ -1182,7 +1181,6 @@ local function renderStationParams(tableContent, data, tradeData, render)
     debugTrace("Set station params edit to " .. tostring(checked))
     data.edit.confirmed = false
     data.statusMessage = nil
-    data.content.tableTopSelectedRow = row.index
     render()
   end
   row[2]:createText(texts.tradeRules .. ":", textCategoryProperties)
@@ -1200,7 +1198,6 @@ local function renderStationParams(tableContent, data, tradeData, render)
       end
       debugTrace("Set fro station trade rule override edit to " .. tostring(checked))
       data.statusMessage = nil
-      data.content.tableTopSelectedRow = row.index
       render()
     end
     if ruleTradeOverride then
@@ -1228,7 +1225,6 @@ local function renderStationParams(tableContent, data, tradeData, render)
       data.edit.confirmed = false
       debugTrace("Set station trade rule edit to " .. tostring(id))
       data.statusMessage = nil
-      data.content.tableTopSelectedRow = row.index
       render()
     end
   else
@@ -1255,7 +1251,6 @@ local function renderStationParams(tableContent, data, tradeData, render)
     data.edit.confirmed = false
     debugTrace("Add new station ware with id " .. tostring(id))
     data.statusMessage = nil
-    data.content.tableTopSelectedRow = row.index
     render()
   end
 end
@@ -1352,14 +1347,9 @@ local function render()
   tableTop:addEmptyRow(Helper.standardTextHeight / 2, { fixed = true })
 
   renderStationParams(tableTop, data, stationData, render)
-  if data.content and data.content.tableTopId then
-    local selectedRow = data.content.tableTopSelectedRow or Helper.currentTableRow[data.content.tableTopId]
-    if selectedRow ~= nil and selectedRow > 0 then
-      tableTop:setSelectedRow(selectedRow)
-    end
-    data.content.tableTopSelectedRow = nil
-  end
 
+  tableTop:setSelectedRow(0)
+  tableTop:setSelectedCol(0)
 
   tableTop:addEmptyRow(Helper.standardTextHeight / 2, { fixed = true })
 

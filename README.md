@@ -129,7 +129,7 @@ In addition - you can mark fro deletion all `Trade wares` at once. Simplely chec
 - Fixed
   - Issue not able to be shown on wharfs or shipyards.
 - Added
-  - Possibility to switch to `Stations Trade Config Exchanger`
+  - Possibility direct switch to `Stations Trade Config Exchanger`
   - Separate menu section in case of `UI Extensions and HUD` mod by `kuertee` is detected.
 - Changed
   - Icon of the menu item in the context menu.

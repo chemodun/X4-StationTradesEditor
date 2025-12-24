@@ -126,6 +126,22 @@ In addition - you can mark fro deletion all [b]Trade wares[/b] at once. Simplely
 [/list]
 [size=130][u]Changelog[/u][/size]
 
+[size=125][u][1.01] - 2025-12-24[/u][/size]
+[list]
+[*] Fixed
+[list]
+[*] Issue not able to be shown on wharfs or shipyards.
+[/list]
+[*] Added
+[list]
+[*] Possibility to switch to [b]Stations Trade Config Exchanger[/b]
+[*] Separate menu section in case of [b]UI Extensions and HUD[/b] mod by [b]kuertee[/b] is detected.
+[/list]
+[*] Changed
+[list]
+[*] Icon of the menu item in the context menu.
+[/list]
+[/list]
 [size=125][u][1.00] - 2025-12-22[/u][/size]
 [list]
 [*] Added

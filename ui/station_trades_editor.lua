@@ -1684,14 +1684,13 @@ local function render()
 
   if not (stationEntry.isShipyard or stationEntry.isWharf) then
     local stationTCEExists, stationTCE = pcall(require, "extensions.stations_tce.ui.trade_config_exchanger")
-    if stationTCEExists and stationTCE and stationTCE.isPresented and stationTCE.button and stationTCE.menuId and stationTCE.eventId and type(stationTCE.setArgs) == "function" then
+    if stationTCEExists and stationTCE and stationTCE.isPresented and stationTCE.button and stationTCE.eventId and type(stationTCE.setArgs) == "function" then
       row[2]:createButton({ active = true }):setText(stationTCE.button, { halign = "center", color = Color["text_positive"] })
       row[2].handlers.onClick = function()
         local args = { selectedStation = stationEntry.id64 }
         stationTCE.setArgs(args)
         menu.closeContextMenu()
-        -- AddUITriggeredEvent(stationTCE.menuId, stationTCE.eventId)
-        CallEventScripts("TradeConfigExchangerShow")
+        CallEventScripts(stationTCE.eventId)
       end
     end
   end
@@ -1880,8 +1879,7 @@ local STE = {
   isPresented = true,
   button = texts.button,
   tooltip = texts.tooltip,
-  menuId = "StationTradesEditor",
-  eventId = "show",
+  eventId = "StationTradesEditorShow",
   setArgs = function(args)
     setArgs(playerId, args)
   end,

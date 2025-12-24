@@ -61,7 +61,7 @@
                   $text       = {1972092410, 1},
                   $mouseover  = {1972092410, 2},
                   $text2      = if @$uixInteractMenuPresent == true then '' else $station.knownname,
-                  $icon       = 'menu_shoppingcart',
+                  $icon       = 'menu_trades_editor',
                   $active     = true,
                   $callback   = Show_Interface,
                 ]" />
@@ -92,18 +92,6 @@
             </do_if>
           </actions>
 
-        </cue>
-
-        <cue name="External_Call" instantiate="true">
-          <conditions>
-            <event_ui_triggered screen="'StationTradesEditor'" control="'show'" />
-          </conditions>
-          <actions>
-            <debug_text
-              text="'StationTradesEditor: External_Call triggered with data: %s'.[@player.entity.$StationTradesEditorSelected.last]" chance="100"
-              filter="scripts" />
-            <raise_lua_event name="'StationTradesEditorShow'" />
-          </actions>
         </cue>
 
       </cues>

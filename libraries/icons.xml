@@ -6,4 +6,7 @@
   <add sel="/icons" if="not(/icons/icon[@name='menu_radio_button_off'])">
     <icon name="menu_radio_button_off" texture="extensions\stations_tce\assets\textures\ui\menu\menu_radio_button_off.tga" height="64" width="64"></icon>
   </add>
+  <add sel="/icons" if="not(/icons/icon[@name='menu_trades_editor'])">
+    <icon name="menu_trades_editor" texture="extensions\station_trades_editor\assets\fx\gui\textures\menu\menu_trades_editor.tga" height="64" width="64"></icon>
+  </add>
 </diff>

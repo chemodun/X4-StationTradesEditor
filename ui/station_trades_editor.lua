@@ -236,11 +236,11 @@ local function buildStationCache()
       debugTrace("Found station: " .. tostring(id) .. " / " .. tostring(id64))
       entry.displayName = getStationName(entry.id64)
       local numStorages = C.GetNumCargoTransportTypes(entry.id64, true)
-      local sector, isshipyard, iswharf = GetComponentData(entry.id64, "sector", "isshipyard", "iswharf")
+      local sector, isShipyard, isWharf = GetComponentData(entry.id64, "sector", "isshipyard", "iswharf")
       entry.sector = sector
-      if isshipyard or iswharf then
-        debugTrace("Skipping station that is a shipyard or wharf: " .. tostring(entry.displayName))
-      elseif numStorages == 0 then
+      entry.isShipyard = isShipyard
+      entry.isWharf = isWharf
+      if numStorages == 0 then
         debugTrace("Skipping station without cargo capacity: " .. tostring(entry.displayName))
       else
         collectWaresAndProductionSignature(entry)
@@ -1682,14 +1682,17 @@ local function render()
 
   row = tableBottom:addRow(true, { fixed = true })
 
-  local stationTCE = require("extensions.stations_tce.ui.trade_config_exchanger")
-  if stationTCE and stationTCE.isPresented and stationTCE.button and stationTCE.menuId and stationTCE.eventId and type(stationTCE.setArgs) == "function" then
-    row[2]:createButton({ active = true }):setText(stationTCE.button, { halign = "center", color = Color["text_positive"] })
-    row[2].handlers.onClick = function()
-      local args = { selectedStation = stationEntry.id64 }
-      stationTCE.setArgs(args)
-      menu.closeContextMenu()
-      AddUITriggeredEvent(stationTCE.menuId, stationTCE.eventId)
+  if not (stationEntry.isShipyard or stationEntry.isWharf) then
+    local stationTCEExists, stationTCE = pcall(require, "extensions.stations_tce.ui.trade_config_exchanger")
+    if stationTCEExists and stationTCE and stationTCE.isPresented and stationTCE.button and stationTCE.menuId and stationTCE.eventId and type(stationTCE.setArgs) == "function" then
+      row[2]:createButton({ active = true }):setText(stationTCE.button, { halign = "center", color = Color["text_positive"] })
+      row[2].handlers.onClick = function()
+        local args = { selectedStation = stationEntry.id64 }
+        stationTCE.setArgs(args)
+        menu.closeContextMenu()
+        -- AddUITriggeredEvent(stationTCE.menuId, stationTCE.eventId)
+        CallEventScripts("TradeConfigExchangerShow")
+      end
     end
   end
 

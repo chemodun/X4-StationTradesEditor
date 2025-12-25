@@ -124,6 +124,13 @@ In addition - you can mark fro deletion all `Trade wares` at once. Simplely chec
 
 ## Changelog
 
+### [1.02] - 2025-12-26
+
+- Fixed
+  - Possible interference with the `Custom Tabs` mod by `mycu`
+- Changed
+  - Menu item icon
+
 ### [1.01] - 2025-12-24
 
 - Fixed

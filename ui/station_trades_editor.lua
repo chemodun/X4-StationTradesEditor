@@ -1867,10 +1867,25 @@ local function getPlayerId()
   end
 end
 
+local function addCustomTabsGroup()
+  local menuInteract = Helper.getMenu("InteractMenu")
+  if (type(menuInteract) ~= "table") then
+    debugTrace("InteractMenu is not available")
+    return
+  end
+  if type(menuInteract.Add_Custom_Actions_Group) ~= "function" then
+    debugTrace("InteractMenu does not support adding custom action groups")
+    return
+  end
+  debugTrace("Going to add custom action group to InteractMenu")
+  AddUITriggeredEvent("StationTradesEditor", "addCustomTabsGroup")
+end
+
+RegisterEvent("StationTradesEditor.AddCustomTabsGroup", addCustomTabsGroup)
+
 local function Init()
   getPlayerId()
-  ---@diagnostic disable-next-line: undefined-global
-  RegisterEvent("StationTradesEditorShow", show)
+  RegisterEvent("StationTradesEditor.Show", show)
   menu = Lib.Get_Egosoft_Menu("MapMenu")
   debugTrace("MapMenu is " .. tostring(menu))
 end
@@ -1879,7 +1894,7 @@ local STE = {
   isPresented = true,
   button = texts.button,
   tooltip = texts.tooltip,
-  eventId = "StationTradesEditorShow",
+  eventId = "StationTradesEditor.Show",
   setArgs = function(args)
     setArgs(playerId, args)
   end,

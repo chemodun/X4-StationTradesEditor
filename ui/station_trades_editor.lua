@@ -1131,7 +1131,6 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
         debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer price edit to " .. tostring(value))
         data.statusMessage = nil
         data.content.selectedRow = row.index
-        render()
       end
       -- row[2].handlers.onSliderCellActivated = function() menu.noupdate = true end
       -- row[2].handlers.onSliderCellDeactivated = function() menu.noupdate = false end
@@ -1167,7 +1166,6 @@ local function renderOffer(tableContent, data, tradeData, ware, offerType, ready
         debugTrace("Set to ware " .. tostring(ware.ware) .. " " .. offerType .. " offer limit edit to " .. tostring(value))
         data.statusMessage = nil
         data.content.selectedRow = row.index
-        render()
       end
     end
   end
@@ -1553,7 +1551,6 @@ local function render()
                 debugTrace("Set ware " .. tostring(ware.ware) .. " storage limit edit to " .. tostring(value))
                 data.statusMessage = nil
                 data.content.selectedRow = row.index
-                render()
               end
               -- row[2].handlers.onSliderCellActivated = function() menu.noupdate = true end
               -- row[2].handlers.onSliderCellDeactivated = function() menu.noupdate = false end

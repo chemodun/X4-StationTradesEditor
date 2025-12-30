@@ -124,6 +124,11 @@ In addition - you can mark fro deletion all `Trade wares` at once. Simplely chec
 
 ## Changelog
 
+### [1.03] - 2025-12-30
+
+- Fixed
+  - Wrong sliders behavior
+
 ### [1.02] - 2025-12-26
 
 - Fixed

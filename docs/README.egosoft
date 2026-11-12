@@ -40,8 +40,18 @@ Or you can do it via the Nexus Mods - [url=https://www.nexusmods.com/x4foundatio
 You can open the Station Trades Editor from the Stations Context Menu.
 
 To do this, simply select a station on a [b]Map[/b] or from [b]Property Owned[/b] list, then right-click on it, and select [b]Station Trades Editor[/b] from the context menu.
+
 [spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/select_from_context_menu.png[/img][/spoiler]
 
+If [b]UI Extensions and HUD[/b] by [url=https://next.nexusmods.com/profile/kuertee?gameId=2659]kuertee[/url] is installed, the item is not at the top of the context menu, it is in a sub-menu: [b]Custom Actions[/b] > [b]Trade Management[/b] > [b]Station Trades Editor[/b].
+
+[spoiler][img]https://raw.githubusercontent.com/chemodun/X4-StationTradesEditor/refs/heads/main/docs/images/select_from_context_menu_uix.png[/img][/spoiler]
+
+The item is shown only:
+[list]
+[*] for your own stations with at least one storage module;
+[*] when no ships are selected together with the station.
+[/list]
 [size=125][u]Usage of the Station Trades Editor[/u][/size]
 
 The Station Trades Editor allows you to select the Station, and then configure it.

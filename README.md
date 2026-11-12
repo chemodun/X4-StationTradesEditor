@@ -38,7 +38,17 @@ Or you can do it via the Nexus Mods - [Station Trades Editor](https://www.nexusm
 You can open the Station Trades Editor from the Stations Context Menu.
 
 To do this, simply select a station on a `Map` or from `Property Owned` list, then right-click on it, and select `Station Trades Editor` from the context menu.
-![Stations Trade Config Exchanger Context Menu Item](docs/images/select_from_context_menu.png)
+
+![Station Trades Editor Context Menu Item](docs/images/select_from_context_menu.png)
+
+If `UI Extensions and HUD` by [kuertee](https://next.nexusmods.com/profile/kuertee?gameId=2659) is installed, the item is not at the top of the context menu, it is in a sub-menu: `Custom Actions` > `Trade Management` > `Station Trades Editor`.
+
+![Station Trades Editor Context Menu Item with UI Extensions and HUD](docs/images/select_from_context_menu_uix.png)
+
+The item is shown only:
+
+- for your own stations with at least one storage module;
+- when no ships are selected together with the station.
 
 ### Usage of the Station Trades Editor
 
